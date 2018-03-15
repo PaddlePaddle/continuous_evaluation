@@ -1,12 +1,12 @@
 # Model CI
 
-The users occasionally found a negligible performance or precision issue between different Paddle versions. Though we have unit tests for each class and Travis-CI to ensures the precision of each operator, there is no any logic to ensure the model (a composition of several operators) works as reliable as the operators.
+The users occasionally find a negligible performance or precision issue between different Paddle versions. Though we have unit tests for each class and Travis-CI to ensures the precision of each operator, there is no logic to ensure the model (a composition of several operators) works as reliable as the operators.
 
 There are several conditions where an existing model will fail either in performance or precision:
 
-1. the incomplete coverage test cases, such as lacking the test of precision. 
-2. poor performance update, currently, we have no performance tracker for each operator.
-3. API changes, developers are likely to forget to update usages in some other repositories such as paddle/models.
+1. Incomplete coverage of test cases. For example, tests lacking precision check.
+2. Poor performance update, currently, we have no performance tracker for each operator.
+3. Developers generally forget to update API use in other repositories such as `paddle/models`.
 
 The model-CI module is proposed to enhance the weaknesses above and track the overall performance and precision of the model granularity, besides monitoring the change of python API.
 
@@ -47,7 +47,7 @@ class Factor(object):
             # write to file self.out_file
 ```
 
-More factors can be integrated into the test framework, for example, a factor tracker which test the training duration can be added in the following way
+More factors can be integrated into the test framework, for example, a factor tracker which tests the training duration can be added in the following way
 
 ```python
 class TrainDurationFactor(Factor):
@@ -104,13 +104,13 @@ for tracker in some_model.meta.tracking_factors:
 
 ## Keep updating the baseline
 The ModelCI will keep comparing the KPIs of the latest code with the last successful evaluated version,
-if the current version has the KPIs better than baseline, update the baseline, otherwise ring an alarm.
+if the current version has better KPIs than baseline, update the baseline, otherwise ring an alarm.
 
 ## Build a testable model
 
 The models should be placed in `./models` directory, each has a sub-directory, and a `train.xsh` script to define how to run this model. After triggering the `train.xsh`, all the data of `tracking_factors` should be created.
 
-For example, a normal model might have following logic
+For example, a normal model might have the following logic
 
 ```python
 # train.xsh
@@ -118,7 +118,7 @@ run_train_cpu
 run_train_gpu
 ```
 
-To make the testing logic stable, the testable model should assure that
+To make the testing logic stable, the testable model should ensure that
 
 - fix the random seed to make result reproducible
 - just run 10 or 20 batches, and the whole execution take no more than 30 mins
