@@ -25,8 +25,11 @@ def reset_commit(dst, commitid):
 def get_commit(local_repo_path, short=False):
     cd @(local_repo_path)
     flags = '%h' if short else '%H'
-    cmd = "git log -1 --pretty=format:%s" % flags
-    commit = $(cmd).strip()
+    if short:
+        commit = $(git log -1 --pretty=format:%h).strip()
+    else:
+        commit = $(git log -1 --pretty=format:%H).strip()
+
     return commit
 
 def get_paddle_commit(short=False):

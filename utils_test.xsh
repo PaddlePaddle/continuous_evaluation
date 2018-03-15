@@ -30,7 +30,7 @@ class TestMain(unittest.TestCase):
     def test_evaluation_succeed(self):
         with utils.PathRecover():
             # prepare data
-            with open(config.success_flag_file, 'w') as f:
+            with open(config.success_flag_file(), 'w') as f:
                 f.write('\n'.join([
                     'model0\tpass',
                     'model1\tpass',
@@ -40,7 +40,7 @@ class TestMain(unittest.TestCase):
     def test_evaluation_succeed_fail(self):
         with utils.PathRecover():
             # prepare data
-            with open(config.success_flag_file, 'w') as f:
+            with open(config.success_flag_file(), 'w') as f:
                 f.write('\n'.join([
                     'model0\tpass',
                     'model1\tfail',

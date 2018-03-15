@@ -3,7 +3,6 @@
 Some stragegies define how to update the baseline.
 '''
 import config
-import common
 import repo
 from utils import *
 
@@ -71,29 +70,23 @@ class GitStrategy(Strategy):
             self._init_repo()
             log.warn('baseline refresh workspace')
             cd @(self.local_dst)
-            # update all
-            git pull
-            # try to remote the workspace first.
-            try:
-                git branch -d develop
-            except: pass
-            try:
-                git branch -d master
-            except: pass
+            # git checkout -b master origin/master
             git checkout -b develop origin/master
-            git checkout -b master origin/master
 
     def update_baseline(self):
-        log.warn('baseline update baseline')
-        assert self.cur_branch == "develop", \
-            "branch %s is should be develop" % self.cur_branch
-        git checkout master
-        git merge develop
-        git push origin master
+        with PathRecover():
+            log.warn('baseline update baseline')
+            cd @(self.local_dst)
+            assert self.cur_branch == "develop", \
+                "branch %s is should be develop" % self.cur_branch
+            self._commit_current_kpis()
+            git checkout master
+            git merge develop
+            git push origin master
 
     def evaluation_passed(self):
         ''' here just use a file as success flag. '''
-        return os.path.isfile(config.success_flag_file)
+        return os.path.isfile(config.success_flag_file())
 
     def store_failed_kpis(self):
         ''' store the failed kpis to failure branch. '''
@@ -110,31 +103,35 @@ class GitStrategy(Strategy):
                 commit = repo.get_paddle_commit(short=True),
                 status = 'passed' if self.evaluation_passed() else 'failed',)
             details = [
-                "paddle commit: %s" % common.get_paddle_commit(),
+                "paddle commit: %s" % repo.get_paddle_commit(),
             ]
             cd @(self.local_dst)
             comment = "{title}\n\n{details}".format(
                         title = title,
                         details = '\n'.join(details))
-            git commit -a -m @(comment)
+            if $(git diff).strip():
+                log.info('commit current kpi to branch[%s]' % self.cur_branch)
+                git commit -a -m "@(comment)"
+            else:
+                log.warn('nothing changes to KPIS and will not commit')
+
 
     def _init_repo(self):
         with PathRecover():
-            if os.path.isdir(config.baseline_local_repo_path):
-                log.warn('git pull baseline to master')
-                cd @(config.baseline_local_repo_path)
-                git checkout origin/master
-                git pull origin master
+            if os.path.isdir(config.baseline_local_repo_path()):
+                # log.warn('git pull baseline to master')
+                # cd @(config.baseline_local_repo_path())
+                # git checkout origin/master
+                # git pull origin master
+                rm -rf @(config.baseline_local_repo_path())
             else:
                 log.warn('git clone baseline from {} to {}'.format(
-                    config.baseline_repo_url,
-                    config.baseline_local_repo_path))
-                git clone @(config.baseline_repo_url) @(config.baseline_local_repo_path)
+                    config.baseline_repo_url(),
+                    config.baseline_local_repo_path()))
+                git clone @(config.baseline_repo_url()) @(config.baseline_local_repo_path())
 
     @property
     def cur_branch(self):
         with PathRecover():
             cd @(self.local_dst)
-            return $(git branch | grep -e "^x").strip()[2:]
-
-
+            return $(git branch | grep -e "^*").strip()[2:]

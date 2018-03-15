@@ -36,7 +36,7 @@ class PathRecover(object):
             cd @(self.pre_path)
 
 def evaluation_succeed():
-    with open(config.success_flag_file) as f:
+    with open(config.success_flag_file()) as f:
         for line in f.readlines():
             model, status = line.strip().split('\t')
             if status == 'fail':
