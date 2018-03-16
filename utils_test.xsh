@@ -47,4 +47,9 @@ class TestMain(unittest.TestCase):
                 ]))
             self.assertFalse(utils.evaluation_succeed())
 
+    def test_global_state_set(self):
+        with utils.PathRecover():
+            utils.GState.set("name", "jomn")
+            self.assertEqual(utils.GState.get("name"), "jomn")
+
 unittest.main(module='utils_test')

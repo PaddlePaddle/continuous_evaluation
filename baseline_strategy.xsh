@@ -1,4 +1,6 @@
 #!/usr/bin/env xonsh
+$RAISE_SUBPROC_ERROR = True
+$XONSH_SHOW_TRACEBACK = True
 '''
 Some stragegies define how to update the baseline.
 '''
@@ -14,7 +16,7 @@ class Strategy(object):
         if self.evaluation_passed():
             self.update_baseline()
         else:
-            self.store_fail_kpis()
+            self.store_failed_kpis()
 
     def refresh_workspace(self):
         ''' git checkout -b develop origin/master. '''
@@ -66,7 +68,6 @@ class GitStrategy(Strategy):
         self.local_dst = local_dst
 
     def refresh_workspace(self):
-        print('baseline update', self.local_dst)
         log.warn('baseline refresh workspace')
         with PathRecover():
             self._init_repo()
@@ -80,6 +81,10 @@ class GitStrategy(Strategy):
             cd @(self.local_dst)
             assert self.cur_branch == "develop", \
                 "branch %s is should be develop" % self.cur_branch
+            for model in models():
+                with PathRecover():
+                    cd @(model)
+                    cp *_factor.txt history/  # update baseline
             self._commit_current_kpis()
             git checkout master
             git merge develop
@@ -89,15 +94,21 @@ class GitStrategy(Strategy):
 
     def evaluation_passed(self):
         ''' here just use a file as success flag. '''
-        return os.path.isfile(config.success_flag_file())
+        return evaluation_succeed()
 
     def store_failed_kpis(self):
         ''' store the failed kpis to failure branch. '''
+        log.info("store the failed kpis")
         with PathRecover():
             cd @(self.local_dst)
             assert self.cur_branch == 'develop'
+            # store the failed record
+            with PathRecover():
+                for model in models():
+                    cd @(model)
+                    git add *_factor.txt
             self._commit_current_kpis()
-            git push origin develop
+            git push origin develop -f
 
     def _commit_current_kpis(self):
         with PathRecover():
@@ -107,26 +118,20 @@ class GitStrategy(Strategy):
                 status = 'passed' if self.evaluation_passed() else 'failed',)
             details = [
                 "paddle commit: %s" % repo.get_paddle_commit(),
+                "evaluation status:\n %s" % open(config.success_flag_file()).read(),
             ]
             cd @(self.local_dst)
+            log.info('commit current kpi to branch[%s]' % self.cur_branch)
             comment = "{title}\n\n{details}".format(
                         title = title,
                         details = '\n'.join(details))
-            if $(git diff).strip():
-                log.info('commit current kpi to branch[%s]' % self.cur_branch)
-                git commit -a -m @(comment)
-            else:
-                log.warn('nothing changes to KPIS and will not commit')
+            git commit -a -m @(comment)
 
 
     def _init_repo(self):
         with PathRecover():
             if os.path.isdir(config.baseline_local_repo_path()):
                 log.info('remove the old baseline: %s' % config.baseline_local_repo_path())
-                # log.warn('git pull baseline to master')
-                # cd @(config.baseline_local_repo_path())
-                # git checkout origin/master
-                # git pull origin master
                 rm -rf @(config.baseline_local_repo_path())
             log.warn('git clone baseline from {} to {}'.format(
                 config.baseline_repo_url(),

@@ -64,9 +64,9 @@ class GreaterWorseFactor(Factor):
         his_data = load_records_from(pjoin(root, self.his_file))
         diff = cur_data - his_data
         larger = diff > 0
-        ratios = diff[larger] / his_data[larger]
-        logging.info('evaluation diff ratio: %s' % str(ratios))
-        return not (ratios > self.diff_thre).any()
+        self.ratios = diff[larger] / his_data[larger]
+        logging.info('evaluation diff ratio: %s' % str(self.ratios))
+        return not (self.ratios > self.diff_thre).any()
 
     def persist(self):
         lines = []
@@ -88,8 +88,14 @@ class GreaterWorseFactor(Factor):
 
     @property
     def error_info(self):
-        return "Test [{name}] failed, some records changed too much.".format(
-            name=self.name)
+        return "[{name}] failed, diff ratio: {ratio} larger than {thre}.".format(
+            name=self.name,
+            ratio=str(self.ratios).replace('\n', ' '),
+            thre=self.diff_thre
+        )
+
+    def sucess_info(self):
+        return "[{name}] pass".format(self.name)
 
 CostFactor = GreaterWorseFactor
 DurationFactor = GreaterWorseFactor

@@ -18,10 +18,10 @@ class TestMain(unittest.TestCase):
         self.obj.refresh_workspace()
         self.assertEqual(self.obj.cur_branch, "develop")
 
-    def test_update_baseline(self):
-        self.obj.refresh_workspace()
+    # def test_update_baseline(self):
+    #     self.obj.refresh_workspace()
         # TODO use some toy branch to test
-        self.obj.update_baseline()
+        # self.obj.update_baseline()
 
 
 unittest.main(module='baseline_strategy_test')

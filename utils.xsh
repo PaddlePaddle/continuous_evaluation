@@ -1,4 +1,6 @@
 #!/usr/bin/env xonsh
+$RAISE_SUBPROC_ERROR = True
+
 import os
 import logging
 import config
@@ -15,6 +17,9 @@ class log:
     @staticmethod
     def warn(*args):
         log.logger().warning(' '.join([str(s) for s in args]))
+
+    def error(*args):
+        log.logger().error(' '.join([str(s) for s in args]))
 
     def debug(*args):
         log.logger().debug(' '.join([str(s) for s in args]))
@@ -39,9 +44,30 @@ def evaluation_succeed():
     with open(config.success_flag_file()) as f:
         for line in f.readlines():
             model, status = line.strip().split('\t')
-            if status == 'fail':
+            if status != 'pass':
                 return False
     return True
+
+def models():
+    with PathRecover():
+        cd @(config.workspace)
+        return filter(lambda x : not x.startswith('__'), $(ls models).strip().split())
+
+
+class GState:
+    ''' A file based state database for information persistance. '''
+    root = config.global_state_root()
+
+    @staticmethod
+    def set(key, value):
+        with open(pjoin(GState.root, key), 'w') as f:
+            f.write(value)
+
+    @staticmethod
+    def get(key):
+        if not os.path.isfile(pjoin(GState.root, key)): return None
+        with open(pjoin(GState.root, key)) as f:
+            return f.read().strip()
 
 SUC = True, ""
 

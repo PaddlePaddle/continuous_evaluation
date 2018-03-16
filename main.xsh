@@ -1,4 +1,7 @@
 #!/usr/bin/env xonsh
+$RAISE_SUBPROC_ERROR = True
+$XONSH_SHOW_TRACEBACK = True
+
 import os
 import sys; sys.path.insert(0, '')
 
@@ -24,35 +27,33 @@ def test_latest_source():
     if not os.path.isdir(config.local_repo_path()):
         repo.clone(config.repo_url(), config.local_repo_path())
     repo.pull(config.local_repo_path())
-    prepare.compile()
-    prepare.install_whl()
-    test_models()
+    if source_code_updated():
+        prepare.compile()
+        prepare.install_whl()
+        test_models()
 
 def test_models():
     cd @(config.workspace)
     baseline.strategy.refresh_workspace()
     evaluate_status = []
     log.info('begin to evaluate model')
-    for path in $(ls models).split():
-        log.info('get model path', path)
+    for model in models():
+        log.info('get model', model)
         status = 'fail'
-        if not path.startswith('__'):
-            model_path = pjoin(config.workspace, path)
-            try:
-                test_model(path)
-                status = 'pass'
-            except TestError:
-                log.warn('test model %s failed' % path)
-            except Exception as e:
-                log.warn('model %s execute error' % path)
-                status = 'exec error: %s' % sys.exc_info()[0]
-            evaluate_status.append((path, status))
+        model_path = pjoin(config.workspace, model)
+        try:
+            passed, errors = test_model(model)
+            status = "pass" if passed else '; '.join(errors)
+            log.info('evaluation status', status)
+        except Exception as e:
+            log.error('model %s execute error' % model)
+            status = 'exec error: %s' % str(e)
+        evaluate_status.append((model, status))
 
     update_evaluation_status(evaluate_status, config.success_flag_file())
     log.warn('evaluation result:\n%s' % open(config.success_flag_file()).read())
 
     baseline.strategy()
-
 
 def test_model(model_name):
     model_dir = pjoin(config.models_path(), model_name)
@@ -70,13 +71,18 @@ def test_model(model_name):
         env = {}
         exec('from models.%s.continuous_evaluation import tracking_factors' % model_name, env)
         tracking_factors = env['tracking_factors']
+        passed = True
+        status = []
         for factor in tracking_factors:
-            factor.evaluate(model_root)
+            suc = factor.evaluate(model_root)
+            if not suc: status.append(factor.error_info)
+            passed = passed and suc
+        return passed, status
 
     with PathRecover():
         cd @(model_dir)
         run_model()
-        evaluate_model()
+        return evaluate_model()
 
 def update_evaluation_status(status, path):
     ''' persist the evaluation status to path '''
@@ -85,6 +91,17 @@ def update_evaluation_status(status, path):
             lines = ['%s\t%s' % kv for kv in status]
             f.write('\n'.join(lines))
 
+def source_code_updated():
+    '''
+    whether paddle source is updated
+    '''
+    cur_commit = repo.get_paddle_commit()
+    last_commit = GState.get(config._state_paddle_code_commit_)
+    updated = last_commit is None or cur_commit != last_commit
+    if not updated:
+        log.info("paddle source code is not changed, skip test, commitid %s" % cur_commit)
+        return updated
+    GState.set(config._state_paddle_code_commit_, cur_commit)
+    return updated
+
 test_latest_source()
-# test_model('resnet30')
-# test_models()

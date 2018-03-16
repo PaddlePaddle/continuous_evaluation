@@ -38,11 +38,15 @@ log_path = lambda: pjoin(workspace, 'modelci.log')
 
 test_root = pjoin(workspace, "_test_tmp_dir")
 
+global_state_root = lambda: pjoin(workspace, "_states")
+mkdir -p @(global_state_root())
+_state_paddle_code_commit_ = "paddle_code_commit"
 
 ############################# DETAILS BELOW #############################
 mkdir -p @(tmp_root())
 
 # set logging
+_log_format_ = '[%(asctime)s %(levelname)s] %(message)s'
 _log_level_ = logging.DEBUG
 $model_ci_log_path=log_path()
 logging.basicConfig(format=_log_format_, level=_log_level_, filename=log_path())
