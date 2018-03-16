@@ -1,0 +1,3 @@
+xonsh
+numpy
+flask
