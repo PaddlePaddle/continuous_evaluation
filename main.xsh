@@ -20,12 +20,13 @@ def test_released_whl():
     test_models()
 
 def test_latest_source():
-    log.warn('init local paddle repo %s' % config.local_repo_path)
-    if not os.path.isdir(config.local_repo_path):
-        repo.clone(config.repo_url, config.local_repo_path)
-    repo.pull(config.local_repo_path)
+    log.warn('init local paddle repo %s' % config.local_repo_path())
+    if not os.path.isdir(config.local_repo_path()):
+        repo.clone(config.repo_url(), config.local_repo_path())
+    repo.pull(config.local_repo_path())
     prepare.compile()
     prepare.install_whl()
+    test_models()
 
 def test_models():
     cd @(config.workspace)
@@ -42,19 +43,19 @@ def test_models():
                 status = 'pass'
             except TestError:
                 log.warn('test model %s failed' % path)
-            except:
+            except Exception as e:
                 log.warn('model %s execute error' % path)
                 status = 'exec error: %s' % sys.exc_info()[0]
             evaluate_status.append((path, status))
 
-    update_evaluation_status(evaluate_status, config.success_flag_file)
-    log.warn('evaluation result:\n%s' % open(config.success_flag_file).read())
+    update_evaluation_status(evaluate_status, config.success_flag_file())
+    log.warn('evaluation result:\n%s' % open(config.success_flag_file()).read())
 
     baseline.strategy()
 
 
 def test_model(model_name):
-    model_dir = pjoin(config.models_path, model_name)
+    model_dir = pjoin(config.models_path(), model_name)
     log.info('model dir', model_dir)
     def run_model():
         log.warn('running model ', model_name)
@@ -62,8 +63,8 @@ def test_model(model_name):
         log.warn('finish running model')
     def evaluate_model():
         log.warn('evaluating model ', model_name)
-        log.info('models_path', config.models_path)
-        model_root = pjoin(config.models_path, model_name)
+        log.info('models_path', config.models_path())
+        model_root = pjoin(config.models_path(), model_name)
         log.info('model_root', model_root)
         cd @(config.workspace)
         env = {}

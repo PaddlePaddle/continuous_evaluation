@@ -66,22 +66,24 @@ class GitStrategy(Strategy):
         self.local_dst = local_dst
 
     def refresh_workspace(self):
+        print('baseline update', self.local_dst)
+        log.warn('baseline refresh workspace')
         with PathRecover():
             self._init_repo()
-            log.warn('baseline refresh workspace')
             cd @(self.local_dst)
             # git checkout -b master origin/master
             git checkout -b develop origin/master
 
     def update_baseline(self):
+        log.warn('baseline update baseline')
         with PathRecover():
-            log.warn('baseline update baseline')
             cd @(self.local_dst)
             assert self.cur_branch == "develop", \
                 "branch %s is should be develop" % self.cur_branch
             self._commit_current_kpis()
             git checkout master
             git merge develop
+            # only update git repo on production mode
             if config.mode == "production":
                 git push origin master
 
@@ -112,7 +114,7 @@ class GitStrategy(Strategy):
                         details = '\n'.join(details))
             if $(git diff).strip():
                 log.info('commit current kpi to branch[%s]' % self.cur_branch)
-                git commit -a -m "@(comment)"
+                git commit -a -m @(comment)
             else:
                 log.warn('nothing changes to KPIS and will not commit')
 
@@ -120,16 +122,16 @@ class GitStrategy(Strategy):
     def _init_repo(self):
         with PathRecover():
             if os.path.isdir(config.baseline_local_repo_path()):
+                log.info('remove the old baseline: %s' % config.baseline_local_repo_path())
                 # log.warn('git pull baseline to master')
                 # cd @(config.baseline_local_repo_path())
                 # git checkout origin/master
                 # git pull origin master
                 rm -rf @(config.baseline_local_repo_path())
-            else:
-                log.warn('git clone baseline from {} to {}'.format(
-                    config.baseline_repo_url(),
-                    config.baseline_local_repo_path()))
-                git clone @(config.baseline_repo_url()) @(config.baseline_local_repo_path())
+            log.warn('git clone baseline from {} to {}'.format(
+                config.baseline_repo_url(),
+                config.baseline_local_repo_path()))
+            git clone @(config.baseline_repo_url()) @(config.baseline_local_repo_path())
 
     @property
     def cur_branch(self):

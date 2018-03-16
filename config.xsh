@@ -31,7 +31,7 @@ success_flag_file = lambda: pjoin(workspace, 'success.flag')
 
 ############################# DONT CHANGE BELOW #############################
 tmp_root = lambda: pjoin(workspace, "tmp")
-whl_path = lambda: pjoin(tmp_root, os.path.basename(compiled_whl_path))
+whl_path = lambda: pjoin(tmp_root(), os.path.basename(compiled_whl_path()))
 models_path = lambda: pjoin(workspace, 'models')
 
 log_path = lambda: pjoin(workspace, 'modelci.log')
@@ -43,8 +43,8 @@ test_root = pjoin(workspace, "_test_tmp_dir")
 mkdir -p @(tmp_root())
 
 # set logging
-_log_format_ = '[%(asctime)-15s] %(message)s'
 _log_level_ = logging.DEBUG
+$model_ci_log_path=log_path()
 logging.basicConfig(format=_log_format_, level=_log_level_, filename=log_path())
 
 def switch_to_test_mode():

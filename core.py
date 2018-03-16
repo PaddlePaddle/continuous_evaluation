@@ -2,7 +2,7 @@ from __future__ import division
 import os
 import json
 import numpy as np
-from utils import log
+import logging
 
 class TestError(Exception):
     pass
@@ -65,7 +65,7 @@ class GreaterWorseFactor(Factor):
         diff = cur_data - his_data
         larger = diff > 0
         ratios = diff[larger] / his_data[larger]
-        log.info('evaluation diff ratio: %s' % str(ratios))
+        logging.info('evaluation diff ratio: %s' % str(ratios))
         return not (ratios > self.diff_thre).any()
 
     def persist(self):
