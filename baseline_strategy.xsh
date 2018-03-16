@@ -82,7 +82,8 @@ class GitStrategy(Strategy):
             self._commit_current_kpis()
             git checkout master
             git merge develop
-            git push origin master
+            if config.mode == "production":
+                git push origin master
 
     def evaluation_passed(self):
         ''' here just use a file as success flag. '''

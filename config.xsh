@@ -4,9 +4,10 @@ import os
 import logging
 
 workspace = $(pwd).strip()
-pjoin = os.path.join
+mode = "production"
 
 ############################# OFFICIAL CONFIGS #############################
+pjoin = os.path.join
 
 # repo address of PaddlePaddle
 repo_url = lambda: 'https://github.com/PaddlePaddle/Paddle.git'
@@ -51,7 +52,8 @@ def switch_to_test_mode():
     - set ci's workspace to test_root
     - clear test_root
     '''
-    global workspace
+    global workspace, mode
+    mode = 'test'
     if '_test_' not in workspace:
         workspace = test_root
 
@@ -59,5 +61,8 @@ def switch_to_test_mode():
     if os.path.isdir(test_root):
         rm -rf @(test_root)
     mkdir @(test_root)
+
+    global baseline_repo_url
+    baseline_repo_url = lambda: "https://github.com/Superjomn/paddle-modelci-baseline.git"
 
     logging.basicConfig(format=_log_format_, level=_log_level_, filename=pjoin(workspace, 'test.log'))

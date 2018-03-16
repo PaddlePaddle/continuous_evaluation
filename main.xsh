@@ -84,6 +84,6 @@ def update_evaluation_status(status, path):
             lines = ['%s\t%s' % kv for kv in status]
             f.write('\n'.join(lines))
 
-# test_latest_source()
+test_latest_source()
 # test_model('resnet30')
-test_models()
+# test_models()
