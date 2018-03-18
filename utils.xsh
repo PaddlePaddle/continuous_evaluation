@@ -2,9 +2,12 @@
 $RAISE_SUBPROC_ERROR = True
 
 import os
+import json
 import logging
 import sys; sys.path.insert(0, '')
 import config
+from gstate import GState
+
 
 class log:
     @staticmethod
@@ -53,37 +56,26 @@ def models():
         cd @(config.workspace)
         return filter(lambda x : not x.startswith('__'), $(ls models).strip().split())
 
+def write_init_models_factors_to_gstate():
+    ''' Detact the test factors for the models and save to gstate. '''
+    with PathRecover():
+        models_ = [] # model.name -> factors
+        for model in models():
+                model_root = pjoin(config.models_path(), model)
+                if not os.path.isfile(pjoin(model_root, 'continuous_evaluation.py')):
+                    continue
+                cd @(config.workspace)
+                env = {}
+                exec('from models.%s.continuous_evaluation import tracking_factors' % model, env)
+                # status: 0 not start
+                #         1 pass
+                #        -1 fail
+                models_.append((model, [(factor.name, 0) for factor in env['tracking_factors']],))
+        GState.set(config._model_factors_, json.dumps(models_))
 
-class GState:
-    ''' A file based state database for information persistance. '''
-    root = config.global_state_root()
-
-    @staticmethod
-    def set(key, value):
-        if not os.path.isdir(GState.root):
-            os.mkdir(GState.root)
-        with open(pjoin(GState.root, key), 'w') as f:
-            f.write(value)
-
-    @staticmethod
-    def get(key):
-        if not os.path.isfile(pjoin(GState.root, key)): return None
-        with open(pjoin(GState.root, key)) as f:
-            return f.read().strip()
-
-    @staticmethod
-    def clear(key):
-        path = pjoin(GState.root, key)
-        if os.path.isfile(path):
-            rm -f @(path)
-
-    @staticmethod
-    def set_evaluation_result(content):
-        GState.set(config._evaluation_result_, content)
-    @staticmethod
-    def get_evaluation_result():
-        return GState.get(config._evaluation_result_)
-
+def update_model_factors_status():
+    ''' update from _evaluation_result_. '''
+    result = GState.get(config._evaluation_result_)
 
 SUC = True, ""
 

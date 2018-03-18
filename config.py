@@ -41,6 +41,7 @@ test_root = pjoin(workspace, "_test_tmp_dir")
 global_state_root = lambda: pjoin(workspace, "_states")
 _state_paddle_code_commit_ = "paddle_code_commit"
 _evaluation_result_ = "evaluation_result"
+_model_factors_ = "model_factors.json"
 
 ############################# DETAILS BELOW #############################
 
