@@ -30,21 +30,20 @@ class TestMain(unittest.TestCase):
     def test_evaluation_succeed(self):
         with utils.PathRecover():
             # prepare data
-            with open(config.success_flag_file(), 'w') as f:
-                f.write('\n'.join([
+            content = '\n'.join([
                     'model0\tpass',
-                    'model1\tpass',
-                ]))
+                    'model1\tpass',])
+            utils.GState.set(config._evaluation_result_, content)
             self.assertTrue(utils.evaluation_succeed())
 
     def test_evaluation_succeed_fail(self):
         with utils.PathRecover():
             # prepare data
-            with open(config.success_flag_file(), 'w') as f:
-                f.write('\n'.join([
+
+            content = '\n'.join([
                     'model0\tpass',
-                    'model1\tfail',
-                ]))
+                    'model1\tfail',])
+            utils.GState.set(config._evaluation_result_, content)
             self.assertFalse(utils.evaluation_succeed())
 
     def test_global_state_set(self):

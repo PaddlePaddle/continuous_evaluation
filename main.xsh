@@ -37,6 +37,7 @@ def test_models():
     baseline.strategy.refresh_workspace()
     evaluate_status = []
     log.info('begin to evaluate model')
+    GState.clear(config._evaluation_result_)
     for model in models():
         log.info('get model', model)
         status = 'fail'
@@ -49,9 +50,9 @@ def test_models():
             log.error('model %s execute error' % model)
             status = 'exec error: %s' % str(e)
         evaluate_status.append((model, status))
+        update_evaluation_status(evaluate_status)
 
-    update_evaluation_status(evaluate_status, config.success_flag_file())
-    log.warn('evaluation result:\n%s' % open(config.success_flag_file()).read())
+    log.warn('evaluation result:\n%s' % GState.get_evaluation_result())
 
     baseline.strategy()
 
@@ -84,12 +85,10 @@ def test_model(model_name):
         run_model()
         return evaluate_model()
 
-def update_evaluation_status(status, path):
+def update_evaluation_status(status):
     ''' persist the evaluation status to path '''
-    with PathRecover():
-        with open(path, 'w') as f:
-            lines = ['%s\t%s' % kv for kv in status]
-            f.write('\n'.join(lines))
+    lines = ['%s\t%s' % kv for kv in status]
+    GState.set_evaluation_result('\n'.join(lines))
 
 def source_code_updated():
     '''

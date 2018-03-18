@@ -27,7 +27,7 @@ baseline_local_repo_path = lambda: pjoin(workspace, 'models')
 
 ############################# CUSTOM CONFIGS #############################
 # just do anything here
-success_flag_file = lambda: pjoin(workspace, 'success.flag')
+# success_flag_file = lambda: pjoin(workspace, 'success.flag')  # 
 
 ############################# DONT CHANGE BELOW #############################
 tmp_root = lambda: pjoin(workspace, "tmp")
@@ -38,9 +38,12 @@ log_path = lambda: pjoin(workspace, 'modelci.log')
 
 test_root = pjoin(workspace, "_test_tmp_dir")
 
+# keys for GState
 global_state_root = lambda: pjoin(workspace, "_states")
-mkdir -p @(global_state_root())
 _state_paddle_code_commit_ = "paddle_code_commit"
+_evaluation_result_ = "evaluation_result"
+
+mkdir -p @(global_state_root())
 
 ############################# DETAILS BELOW #############################
 mkdir -p @(tmp_root())
@@ -48,7 +51,6 @@ mkdir -p @(tmp_root())
 # set logging
 _log_format_ = '[%(asctime)s %(levelname)s] %(message)s'
 _log_level_ = logging.DEBUG
-$model_ci_log_path=log_path()
 logging.basicConfig(format=_log_format_, level=_log_level_, filename=log_path())
 
 def switch_to_test_mode():

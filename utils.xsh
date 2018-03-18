@@ -41,11 +41,10 @@ class PathRecover(object):
             cd @(self.pre_path)
 
 def evaluation_succeed():
-    with open(config.success_flag_file()) as f:
-        for line in f.readlines():
-            model, status = line.strip().split('\t')
-            if status != 'pass':
-                return False
+    for line in GState.get_evaluation_result().split('\n'):
+        model, status = line.strip().split('\t')
+        if status != 'pass':
+            return False
     return True
 
 def models():
@@ -68,6 +67,20 @@ class GState:
         if not os.path.isfile(pjoin(GState.root, key)): return None
         with open(pjoin(GState.root, key)) as f:
             return f.read().strip()
+
+    @staticmethod
+    def clear(key):
+        path = pjoin(GState.root, key)
+        if os.path.isfile(path):
+            rm -f @(path)
+
+    @staticmethod
+    def set_evaluation_result(content):
+        GState.set(config._evaluation_result_, content)
+    @staticmethod
+    def get_evaluation_result():
+        return GState.get(config._evaluation_result_)
+
 
 SUC = True, ""
 
