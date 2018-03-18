@@ -5,6 +5,8 @@ import sys; sys.path.insert(0, '')
 import config
 import utils
 
+mkdir -p @(config.test_root)
+
 class TestMain(unittest.TestCase):
     def setUp(self):
         config.switch_to_test_mode()
@@ -51,5 +53,12 @@ class TestMain(unittest.TestCase):
         with utils.PathRecover():
             utils.GState.set("name", "jomn")
             self.assertEqual(utils.GState.get("name"), "jomn")
+
+    def test_write_init_models_factors_to_gstate(self):
+        import baseline
+        with utils.PathRecover():
+            baseline.strategy.refresh_workspace()
+            utils.update_models_structure_to_gstate()
+
 
 unittest.main(module='utils_test')
