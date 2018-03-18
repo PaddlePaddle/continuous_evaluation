@@ -1,8 +1,9 @@
 #!/usr/bin/env xonsh
 $RAISE_SUBPROC_ERROR = True
 import os
-import config
+import sys; sys.path.insert(0, '')
 import unittest
+import config
 from utils import *
 from baseline_strategy import GitStrategy
 

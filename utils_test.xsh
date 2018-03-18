@@ -1,8 +1,9 @@
 #!/usr/bin/env xonsh
-import config
-import unittest
-import utils
 import os
+import unittest
+import sys; sys.path.insert(0, '')
+import config
+import utils
 
 class TestMain(unittest.TestCase):
     def setUp(self):

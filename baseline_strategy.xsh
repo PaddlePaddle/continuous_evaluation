@@ -4,6 +4,7 @@ $XONSH_SHOW_TRACEBACK = True
 '''
 Some stragegies define how to update the baseline.
 '''
+import sys; sys.path.insert(0, '')
 import config
 import repo
 from utils import *

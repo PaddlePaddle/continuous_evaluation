@@ -1,9 +1,8 @@
-#!/usr/bin/env xonsh
-$RAISE_SUBPROC_ERROR = True
 import os
 import logging
+import shutil
 
-workspace = $(pwd).strip()
+workspace = os.path.dirname(os.path.realpath(__file__))  # pwd
 mode = "production"
 
 ############################# OFFICIAL CONFIGS #############################
@@ -27,7 +26,7 @@ baseline_local_repo_path = lambda: pjoin(workspace, 'models')
 
 ############################# CUSTOM CONFIGS #############################
 # just do anything here
-# success_flag_file = lambda: pjoin(workspace, 'success.flag')  # 
+# success_flag_file = lambda: pjoin(workspace, 'success.flag')  #
 
 ############################# DONT CHANGE BELOW #############################
 tmp_root = lambda: pjoin(workspace, "tmp")
@@ -43,15 +42,14 @@ global_state_root = lambda: pjoin(workspace, "_states")
 _state_paddle_code_commit_ = "paddle_code_commit"
 _evaluation_result_ = "evaluation_result"
 
-mkdir -p @(global_state_root())
-
 ############################# DETAILS BELOW #############################
-mkdir -p @(tmp_root())
 
 # set logging
 _log_format_ = '[%(asctime)s %(levelname)s] %(message)s'
 _log_level_ = logging.DEBUG
-logging.basicConfig(format=_log_format_, level=_log_level_, filename=log_path())
+logging.basicConfig(
+    format=_log_format_, level=_log_level_, filename=log_path())
+
 
 def switch_to_test_mode():
     '''
@@ -65,10 +63,19 @@ def switch_to_test_mode():
 
     assert "_test_tmp_dir" in test_root
     if os.path.isdir(test_root):
-        rm -rf @(test_root)
-    mkdir @(test_root)
+        shutil.rmtree(test_root)
 
     global baseline_repo_url
     baseline_repo_url = lambda: "https://github.com/Superjomn/paddle-modelci-baseline.git"
 
-    logging.basicConfig(format=_log_format_, level=_log_level_, filename=pjoin(workspace, 'test.log'))
+    logging.basicConfig(
+        format=_log_format_,
+        level=_log_level_,
+        filename=pjoin(workspace, 'test.log'))
+
+if not os.path.isdir(test_root):
+    os.mkdir(test_root)
+
+# os.mkdir(global_state_root())
+# os.mkdir(test_root)
+# os.mkdir(tmp_root())

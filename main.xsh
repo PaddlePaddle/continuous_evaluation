@@ -53,7 +53,6 @@ def test_models():
         update_evaluation_status(evaluate_status)
 
     log.warn('evaluation result:\n%s' % GState.get_evaluation_result())
-
     baseline.strategy()
 
 def test_model(model_name):

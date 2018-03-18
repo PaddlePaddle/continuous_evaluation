@@ -2,6 +2,7 @@
 '''
 some utils for clone repo, commit.
 '''
+import sys; sys.path.insert(0, '')
 import config
 from utils import *
 

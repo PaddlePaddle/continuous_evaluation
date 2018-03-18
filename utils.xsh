@@ -3,6 +3,7 @@ $RAISE_SUBPROC_ERROR = True
 
 import os
 import logging
+import sys; sys.path.insert(0, '')
 import config
 
 class log:
@@ -59,6 +60,8 @@ class GState:
 
     @staticmethod
     def set(key, value):
+        if not os.path.isdir(GState.root):
+            os.mkdir(GState.root)
         with open(pjoin(GState.root, key), 'w') as f:
             f.write(value)
 

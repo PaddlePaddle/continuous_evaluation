@@ -13,6 +13,7 @@ class GreaterWorseFactorTester(unittest.TestCase):
     def setUp(self):
         config.switch_to_test_mode()
         self.factor = core.GreaterWorseFactor("train", diff_thre=0.1)
+        mkdir -p @(config.test_root)
         cd @(config.test_root)
         mkdir -p history
 

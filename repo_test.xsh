@@ -12,3 +12,5 @@ class TestMain(unittest.TestCase):
 
     def test_clone(self):
         pass
+
+unittest.main(module='repo_test')
