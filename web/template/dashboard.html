@@ -10,16 +10,21 @@
         <div class="row">
             <div class="col-sm">
                 {% if last_success_commit == "none" %}
-                <span class="badge badge-success">Last success</span> <a href="#" class="alert-link">{{ last_success_commit }}</a>
+                <span class="badge badge-success">Last success</span> <a href="#" class="alert-link">{{
+                last_success_commit }}</a>
                 {% else %}
-                <span class="badge badge-success">Last success</span> <a href="{{ paddle_commit_url }}/{{ last_success_commit }}" class="alert-link">{{ last_success_commit }}</a>
+                <span class="badge badge-success">Last success</span> <a
+                    href="{{ paddle_commit_url }}/{{ last_success_commit }}" class="alert-link">{{ last_success_commit[:7]
+                }}</a>
                 {% endif %}
             </div>
             <div class="col-sm">
                 {% if last_fail_commit == "none" %}
-                <span class="badge badge-danger">Last fail</span> <a href="#" class="alert-link">{{ last_fail_commit }}</a>
+                <span class="badge badge-danger">Last fail</span> <a href="#" class="alert-link">{{ last_fail_commit
+                }}</a>
                 {% else %}
-                <span class="badge badge-danger">Last fail</span> <a href="{{ paddle_commit_url }}/{{ last_fail_commit }}" class="alert-link">{{ last_fail_commit }}</a>
+                <span class="badge badge-danger">Last fail</span>
+                <a href="{{ paddle_commit_url }}/{{ last_fail_commit }}" class="alert-link">{{ last_fail_commit[:7] }}</a>
                 {% endif %}
             </div>
             <hr/>
@@ -27,7 +32,8 @@
 
         {%if source_code_updated %}
         <div class="row alert alert-primary">
-            Currently working on Paddle version: &nbsp;<a href="#" class="alert-link">{{ current_working_on_commit }}</a>
+            Currently working on Paddle version: &nbsp;<a href="#" class="alert-link">{{ current_working_on_commit[:7]
+            }}</a>
         </div>
         {% else %}
         <div class="row alert alert-secondary">
@@ -36,25 +42,47 @@
         {% endif %}
 
         <div class="row progress modelce-row">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ current_progress }}" aria-valuemin=0" aria-valuemax="100" style="width:{{ current_progress }}%">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                 aria-valuenow="{{ current_progress }}" aria-valuemin=0" aria-valuemax="100"
+                 style="width:{{ current_progress }}%">
                 {{ current_progress }}%
             </div>
         </div>
 
         <!-- details -->
         <div class="row">
-            {% for model in init_model_factors %}
-            <div class="card modelce-model-card" style="width:18rem;">
-                <div class="card-body" style="float:left">
-                    <h5>{{ model[0] }}</h5>
-                    <ul class="list-group">
-                        {% for factor in model[1] %}
-                        <li class="list-group-item list-group-item-{{ factor[1] }}">{{ factor[0] }}</li>
-                        {% endfor %}
-                    </ul>
+            <div class="col-8">
+                {% for model in init_model_factors %}
+                <div class="card modelce-model-card" style="width:18rem;">
+                    <div class="card-body" style="float:left">
+                        <h5>{{ model[0] }}</h5>
+                        <ul class="list-group">
+                            {% for factor in model[1] %}
+                            <li class="list-group-item list-group-item-{{ factor[1] }}">{{ factor[0] }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            <div class="col">
+                <ul class="list-group">
+                    <li class="list-group-item active">
+                        Latest records
+                    </li>
+                    {% for item in evaluation_records %}
+                    <li class="list-group-item">
+                        <a href="{{ item[0] }}">{{ item[0][:7] }}</a>
+                        {% if item[1] %}
+                            <span class="badge badge-pill badge-success">pass</span>
+                        {% else %}
+                            <span class="badge badge-pill badge-danger">fail</span>
+                        {% endif %}
+                        <span>{{ item[2] }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
 
     </div> <!-- dashboard -->

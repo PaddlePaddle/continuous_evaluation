@@ -96,21 +96,29 @@
      * Utilities
      */
 
-    .border-top { border-top: 1px solid #e5e5e5; }
-    .border-bottom { border-bottom: 1px solid #e5e5e5; }
+    .border-top {
+        border-top: 1px solid #e5e5e5;
+    }
+
+    .border-bottom {
+        border-bottom: 1px solid #e5e5e5;
+    }
 
     /*
      * Custom
      */
     .modelce-model-card {
         margin: 6px 3px;
+        float: left;
     }
+
     .modelce-row {
         margin-bottom: 10px;
     }
 
 </style>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
 <body>
 
@@ -167,120 +175,135 @@
             </div>
         </nav>
 
-    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
-            <h1 class="h2">Dashboard</h1>
-        </div>
-
-        <div class="container-fluid border-bottom">
-            <div class="row">
-                <div class="col-sm">
-                    <span class="badge badge-success">Last success</span> <a href="#" class="alert-link">fdsaf</a>
-                </div>
-                <div class="col-sm">
-                    <span class="badge badge-danger">Last fail</span> <a href="#" class="alert-link">fdsaf</a>
-                </div>
-                <hr/>
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
+                <h1 class="h2">Dashboard</h1>
             </div>
 
-            <div class="row alert alert-primary">
-                Currently working on &nbsp;<a href="#" class="alert-link">3dfsaf</a>
+            <div class="container-fluid border-bottom">
+                <div class="row">
+                    <div class="col-sm">
+                        <span class="badge badge-success">Last success</span> <a href="#" class="alert-link">fdsaf</a>
+                    </div>
+                    <div class="col-sm">
+                        <span class="badge badge-danger">Last fail</span> <a href="#" class="alert-link">fdsaf</a>
+                    </div>
+                    <hr/>
+                </div>
+
+                <div class="row alert alert-primary">
+                    Currently working on &nbsp;<a href="#" class="alert-link">3dfsaf</a>
+                </div>
+
+                <div class="row progress modelce-row">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                         aria-valuenow="75" aria-valuemin=0" aria-valuemax="100" style="width:75%">
+                        75%
+                    </div>
+                </div>
+
+                <!-- details -->
+                <div class="row">
+                    <div class="col-8" style="border:1px solid red;">
+                        <div class="card modelce-model-card" style="width:18rem;">
+                            <div class="card-body" style="float:left">
+                                <h5>resnet30</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item list-group-item-success">train-cost</li>
+                                    <li class="list-group-item list-group-item-danger">test cost</li>
+                                    <li class="list-group-item list-group-item-light">train duration</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card modelce-model-card" style="width:18rem;">
+                            <div class="card-body" style="float:left">
+                                <h5>rnnsearch</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item list-group-item-success">train-cost</li>
+                                    <li class="list-group-item list-group-item-danger">test cost</li>
+                                    <li class="list-group-item list-group-item-light">train duration</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card modelce-model-card" style="width:18rem;">
+                            <div class="card-body" style="float:left">
+                                <h5>rnnsearch</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item list-group-item-success">train-cost</li>
+                                    <li class="list-group-item list-group-item-danger">test cost</li>
+                                    <li class="list-group-item list-group-item-light">train duration</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card modelce-model-card" style="width:18rem;">
+                            <div class="card-body" style="float:left">
+                                <h5>rnnsearch</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item list-group-item-success">train-cost</li>
+                                    <li class="list-group-item list-group-item-danger">test cost</li>
+                                    <li class="list-group-item list-group-item-light">train duration</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card modelce-model-card" style="width:18rem;">
+                            <div class="card-body" style="float:left">
+                                <h5>rnnsearch</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item list-group-item-success">train-cost</li>
+                                    <li class="list-group-item list-group-item-danger">test cost</li>
+                                    <li class="list-group-item list-group-item-light">train duration</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card modelce-model-card" style="width:18rem;">
+                            <div class="card-body" style="float:left">
+                                <h5>rnnsearch</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item list-group-item-success">train-cost</li>
+                                    <li class="list-group-item list-group-item-danger">test cost</li>
+                                    <li class="list-group-item list-group-item-light">train duration</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card modelce-model-card" style="width:18rem;">
+                            <div class="card-body" style="float:left">
+                                <h5>rnnsearch</h5>
+                                <ul class="list-group">
+                                    <li class="list-group-item list-group-item-success">train-cost</li>
+                                    <li class="list-group-item list-group-item-danger">test cost</li>
+                                    <li class="list-group-item list-group-item-light">train duration</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <a href="#">dafdfd2</a>
+                                <span class="badge badge-pill badge-success">pass</span>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="#">dafdfd2</a>
+                                <span class="badge badge-pill badge-success">pass</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div> <!-- dashboard -->
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                <h1 class="h2">Status</h1>
             </div>
-
-            <div class="row progress modelce-row">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin=0" aria-valuemax="100" style="width:75%">
-                    75%
-                </div>
-            </div>
-
-            <!-- details -->
-            <div class="row">
-                <div class="card modelce-model-card" style="width:18rem;">
-                    <div class="card-body" style="float:left">
-                        <h5>resnet30</h5>
-                        <ul class="list-group">
-                            <li class="list-group-item list-group-item-success">train-cost</li>
-                            <li class="list-group-item list-group-item-danger">test cost</li>
-                            <li class="list-group-item list-group-item-light">train duration</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card modelce-model-card" style="width:18rem;">
-                    <div class="card-body" style="float:left">
-                        <h5>rnnsearch</h5>
-                        <ul class="list-group">
-                            <li class="list-group-item list-group-item-success">train-cost</li>
-                            <li class="list-group-item list-group-item-danger">test cost</li>
-                            <li class="list-group-item list-group-item-light">train duration</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card modelce-model-card" style="width:18rem;">
-                    <div class="card-body" style="float:left">
-                        <h5>rnnsearch</h5>
-                        <ul class="list-group">
-                            <li class="list-group-item list-group-item-success">train-cost</li>
-                            <li class="list-group-item list-group-item-danger">test cost</li>
-                            <li class="list-group-item list-group-item-light">train duration</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card modelce-model-card" style="width:18rem;">
-                    <div class="card-body" style="float:left">
-                        <h5>rnnsearch</h5>
-                        <ul class="list-group">
-                            <li class="list-group-item list-group-item-success">train-cost</li>
-                            <li class="list-group-item list-group-item-danger">test cost</li>
-                            <li class="list-group-item list-group-item-light">train duration</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card modelce-model-card" style="width:18rem;">
-                    <div class="card-body" style="float:left">
-                        <h5>rnnsearch</h5>
-                        <ul class="list-group">
-                            <li class="list-group-item list-group-item-success">train-cost</li>
-                            <li class="list-group-item list-group-item-danger">test cost</li>
-                            <li class="list-group-item list-group-item-light">train duration</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card modelce-model-card" style="width:18rem;">
-                    <div class="card-body" style="float:left">
-                        <h5>rnnsearch</h5>
-                        <ul class="list-group">
-                            <li class="list-group-item list-group-item-success">train-cost</li>
-                            <li class="list-group-item list-group-item-danger">test cost</li>
-                            <li class="list-group-item list-group-item-light">train duration</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card modelce-model-card" style="width:18rem;">
-                    <div class="card-body" style="float:left">
-                        <h5>rnnsearch</h5>
-                        <ul class="list-group">
-                            <li class="list-group-item list-group-item-success">train-cost</li>
-                            <li class="list-group-item list-group-item-danger">test cost</li>
-                            <li class="list-group-item list-group-item-light">train duration</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-        </div> <!-- dashboard -->
-
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-            <h1 class="h2">Status</h1>
-        </div>
-        <div class="container-fluid border-bottom">
-            <table class="table table-striped">
-                <tbody>
+            <div class="container-fluid border-bottom">
+                <table class="table table-striped">
+                    <tbody>
                     <tr>
                         <th scope="row">dfadfadfaffbdfabvag</th>
                         <th scope="row">2017-01-22 10:00pm</th>
@@ -297,25 +320,25 @@
                             </pre>
                         </th>
                     </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
 
-        </div> <!-- history -->
+            </div> <!-- history -->
 
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-            <h1 class="h2">History</h1>
-        </div>
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                <h1 class="h2">History</h1>
+            </div>
 
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-            <h1 class="h2">Evaluation Log</h1>
-        </div>
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                <h1 class="h2">Evaluation Log</h1>
+            </div>
 
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-            <h1 class="h2">Stdout</h1>
-        </div>
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                <h1 class="h2">Stdout</h1>
+            </div>
 
 
-    </main>
+        </main>
 
 
     </div><!-- row -->
@@ -327,7 +350,13 @@
 <script>
     feather.replace()
 </script>
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
 </html>
