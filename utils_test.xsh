@@ -103,5 +103,11 @@ class TestMain(unittest.TestCase):
             progress = json.loads(gstate.get_progress_list())
             self.assertTrue(progress)
 
+    def test_write_history_to_gstate(self):
+        import baseline
+        with utils.PathRecover():
+            baseline.strategy.refresh_workspace()
+            utils.write_history_to_gstate()
+
 
 unittest.main(module='utils_test')

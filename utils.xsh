@@ -112,8 +112,28 @@ def update_model_factors_status(model, factor, status):
     gstate.set(config._model_factors_, json.dumps(state))
     gstate.set_current_progress("%s/%s" % (model, factor))
 
-def init_progress_list_to_gstate():
-    pass
+def write_history_to_gstate():
+    with PathRecover():
+        cd @(config.models_path())
+        spliter = '__'
+        history = $(git log --pretty=format:">>>%H__%ai__%s__%B")
+        records = []
+        print('history', repr(history))
+        for line in history.split('\n'):
+            if line.startswith('"'): line = line[1:-1]
+            print('line', repr(line))
+            if not line: continue
+            if line.startswith('>>>'):
+                fields = line.strip().split(spliter)
+                commitid = fields[0][3:]
+                date, subject = fields[1:3]
+                body = fields[3]
+                records.append([commitid, date, subject, body])
+            else:
+                print('records', records)
+                # append body
+                records[-1][3] += '\n' + line
+        gstate.update_baseline_history(json.dumps(records))
 
 def update_fail_commit_to_gstate():
     commit = gstate.get(config._state_paddle_code_commit_)

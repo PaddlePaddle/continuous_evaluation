@@ -3,6 +3,7 @@ import os
 import config
 pjoin = os.path.join
 
+
 class gstate:
     ''' A file based state database for information persistance. '''
     root = config.global_state_root()
@@ -29,26 +30,40 @@ class gstate:
     @staticmethod
     def set_evaluation_result(content):
         gstate.set(config._evaluation_result_, content)
+
     @staticmethod
     def get_evaluation_result():
         return gstate.get(config._evaluation_result_)
 
     progress_list = 'progress_list.json'
+
     @staticmethod
     def set_progress_list(li=['prepare/clone_code', 'prepare/compile']):
         '''
         list of str,
         '''
         gstate.set(gstate.progress_list, li)
+
     @staticmethod
     def get_progress_list():
         return gstate.get(gstate.progress_list)
 
     current_progress = 'current_progress.json'
+
     @staticmethod
     def set_current_progress(v):
         gstate.set(gstate.current_progress, v)
+
     @staticmethod
     def get_current_progress():
         return gstate.get(gstate.current_progress)
 
+    baseline_history = 'baseline_history'
+
+    @staticmethod
+    def update_baseline_history(history):
+        gstate.set(gstate.baseline_history, history)
+
+    @staticmethod
+    def get_baseline_history():
+        return gstate.get(gstate.baseline_history)

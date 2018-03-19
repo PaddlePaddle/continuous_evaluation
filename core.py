@@ -4,8 +4,10 @@ import json
 import numpy as np
 import logging
 
+
 class TestError(Exception):
     pass
+
 
 class Factor(object):
     dic = {}
@@ -55,7 +57,8 @@ class GreaterWorseFactor(Factor):
         '''
         diff_thre: difference threshold.
         '''
-        super(GreaterWorseFactor, self).__init__(out_file='%s_factor.txt' % name)
+        super(GreaterWorseFactor, self).__init__(out_file='%s_factor.txt' %
+                                                 name)
         self.name = name
         self.diff_thre = diff_thre
 
@@ -91,11 +94,11 @@ class GreaterWorseFactor(Factor):
         return "[{name}] failed, diff ratio: {ratio} larger than {thre}.".format(
             name=self.name,
             ratio=str(self.ratios).replace('\n', ' '),
-            thre=self.diff_thre
-        )
+            thre=self.diff_thre)
 
     def sucess_info(self):
         return "[{name}] pass".format(self.name)
+
 
 CostFactor = GreaterWorseFactor
 DurationFactor = GreaterWorseFactor
@@ -112,5 +115,6 @@ def load_records_from(file):
             data = json.loads(line.strip())
             datas.append(np.array(data))
     return np.array(datas)
+
 
 pjoin = os.path.join

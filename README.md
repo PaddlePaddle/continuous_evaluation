@@ -4,7 +4,7 @@ The users occasionally found a negligible performance or precision issue between
 
 There are several conditions where an existing model will fail either in performance or precision:
 
-1. the incomplete coverage test cases, such as lacking the test of precision. 
+1. the incomplete coverage test cases, such as lacking the test of precision.
 2. poor performance update, currently, we have no performance tracker for each operator.
 3. API changes, developers are likely to forget to update usages in some other repositories such as paddle/models.
 
@@ -23,16 +23,16 @@ class Factor(object):
         self.out_file = out_file
         self.his_file = os.path.join('history', out_file)
         self.factors = []
-        
+
         Factor.__register__(self.__class__)
-        
+
     def add_record(self, r): # called when the model run, add execution details.
         self.factors.append(r)
-        
+
     def test(): # called when test
         # can be something comparing the execution details with historical data.
         raise NotImplementedError
-        
+
     @staticmethod
     def __register__(factor): # factor should be a subclass
         assert isinstance(factor, Factor)
@@ -41,7 +41,7 @@ class Factor(object):
             assert Factor.dic[key] is factor
         else:
             Factor.dic[key] = factor
-    
+
     def __del__(self):
         if self.factors:
             # write to file self.out_file
@@ -54,7 +54,7 @@ class TrainDurationFactor(Factor):
     def __init__(self, threshold):
         super(TrainDurationFactor, self).__init__('train.dura.txt')
         self.threshold = threshold
-    
+
     def test(self):
         cur_data = _load_nparray_from_file(self.out_file)
         his_data = _load_nparray_from_file(self.his_file)
@@ -126,10 +126,10 @@ To make the testing logic stable, the testable model should assure that
 
 ## Persistence of log
 
-The log of each execution should be stored somewhere, 
+The log of each execution should be stored somewhere,
 the simplest way is to use Git to maintain a versionable history.
 
-After each execution, add all the logs and statistic result and commit with a comment with a 
+After each execution, add all the logs and statistic result and commit with a comment with a
 template like
 
 ```
@@ -141,7 +141,7 @@ paddle code version: {commitid}
 
 ## Alarm
 
-If a test failed, ring an alarm by 
+If a test failed, ring an alarm by
 
 - sending email to `paddle-dev@baidu.com` including
   - error type
