@@ -4,6 +4,8 @@ import unittest
 import sys; sys.path.insert(0, '')
 import config
 import utils
+import json
+from gstate import gstate
 
 mkdir -p @(config.test_root)
 
@@ -59,6 +61,37 @@ class TestMain(unittest.TestCase):
         with utils.PathRecover():
             baseline.strategy.refresh_workspace()
             utils.write_init_models_factors_to_gstate()
+
+    def test_update_model_factors_status_fail(self):
+        import baseline
+        with utils.PathRecover():
+            baseline.strategy.refresh_workspace()
+            utils.write_init_models_factors_to_gstate()
+            error_info = "error xxxx"
+            utils.update_model_factors_status("resnet30", "train_cost", error_info)
+            # check
+            status = json.loads(gstate.get(config._model_factors_))
+            for model in status:
+                if model[0] == 'resnet30':
+                    for factor in model[1]:
+                        if factor[0] == 'train_cost':
+                            self.assertEqual(factor[1], -1)
+                    break
+    def test_update_model_factors_status_success(self):
+        import baseline
+        with utils.PathRecover():
+            baseline.strategy.refresh_workspace()
+            utils.write_init_models_factors_to_gstate()
+            error_info = "pass"
+            utils.update_model_factors_status("resnet30", "train_cost", error_info)
+            # check
+            status = json.loads(gstate.get(config._model_factors_))
+            for model in status:
+                if model[0] == 'resnet30':
+                    for factor in model[1]:
+                        if factor[0] == 'train_cost':
+                            self.assertEqual(factor[1], 1)
+                    break
 
 
 unittest.main(module='utils_test')

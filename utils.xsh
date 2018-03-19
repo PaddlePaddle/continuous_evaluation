@@ -58,19 +58,27 @@ def models():
 
 def write_init_models_factors_to_gstate():
     ''' Detact the test factors for the models and save to gstate. '''
+    log.info('write initial model factors to gstate')
     with PathRecover():
-        models_ = [] # model.name -> factors
+        models_ = [
+            ('prepare', [
+                ('update_baseline', 1, ''),
+                ('update_source_code', 0, ''),
+                ('compile', 0, ''),
+                ('install_whl', 0, ''),
+            ])
+        ] # model.name -> factors
         for model in models():
-                model_root = pjoin(config.models_path(), model)
-                if not os.path.isfile(pjoin(model_root, 'continuous_evaluation.py')):
-                    continue
-                cd @(config.workspace)
-                env = {}
-                exec('from models.%s.continuous_evaluation import tracking_factors' % model, env)
-                # status: 0 not start
-                #         1 pass
-                #        -1 fail
-                models_.append((model, [(factor.name, 0) for factor in env['tracking_factors']],))
+            model_root = pjoin(config.models_path(), model)
+            if not os.path.isfile(pjoin(model_root, 'continuous_evaluation.py')):
+                continue
+            cd @(config.workspace)
+            env = {}
+            exec('from models.%s.continuous_evaluation import tracking_factors' % model, env)
+            # status: 0 not start
+            #         1 pass
+            #        -1 fail
+            models_.append((model, [(factor.name, 0, '') for factor in env['tracking_factors']],))
         gstate.set(config._model_factors_, json.dumps(models_))
 
 def update_model_factors_status(model, factor, status):
@@ -81,19 +89,19 @@ def update_model_factors_status(model, factor, status):
     status: 'pass' or 'error info'.
     '''
     commit = gstate.get(config._state_paddle_code_commit_)
-    status = json.loads(gstate.get(config._model_factors_))
-    offset = status.index(model)
-    assert offset != -1
-    model = status[offset]
-    for factor_ in model:
-        if factor_[0] == factor:
-            if status != 'pass':
-                factor_[1] = -1
-                factor_[2] = status
-            else:
-                factor_[1] = 1
+    state = json.loads(gstate.get(config._model_factors_))
+    for model_ in state:
+        if model_[0] == model:
+            for factor_ in model_[1]:
+                if factor_[0] == factor:
+                    if status != 'pass':
+                        factor_[1] = -1
+                        factor_[2] = status
+                    else:
+                        factor_[1] = 1
+                    break
             break
-    gstate.set(config._model_factors_, json.dumps(status))
+    gstate.set(config._model_factors_, json.dumps(state))
 
 def init_progress_list_to_gstate():
     pass

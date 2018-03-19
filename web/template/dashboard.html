@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block main %}
+
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
+        <h1 class="h2">Dashboard</h1>
+    </div>
+
+    <div class="container-fluid border-bottom">
+        <div class="row">
+            <div class="col-sm">
+                <span class="badge badge-success">Last success</span> <a href="#" class="alert-link">{{ last_success_commit }}</a>
+            </div>
+            <div class="col-sm">
+                <span class="badge badge-danger">Last fail</span> <a href="#" class="alert-link">{{ last_fail_commit }}</a>
+            </div>
+            <hr/>
+        </div>
+
+        <div class="row alert alert-primary">
+            Currently working on &nbsp;<a href="#" class="alert-link">{{ current_working_on_commit }}</a>
+        </div>
+
+        <div class="row progress modelce-row">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ current_progress }}" aria-valuemin=0" aria-valuemax="100" style="width:{{ current_progress }}%">
+                {{ current_progress }}%
+            </div>
+        </div>
+
+        <!-- details -->
+        <div class="row">
+            {% for model in init_model_factors %}
+            <div class="card modelce-model-card" style="width:18rem;">
+                <div class="card-body" style="float:left">
+                    <h5>{{ model[0] }}</h5>
+                    <ul class="list-group">
+                        {% for factor in model[1] %}
+                        <li class="list-group-item list-group-item-{{ factor[1] }}">{{ factor[0] }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div> <!-- dashboard -->
+
+</main>
+{% endblock %}
