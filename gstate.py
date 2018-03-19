@@ -3,33 +3,44 @@ import os
 import config
 pjoin = os.path.join
 
-class GState:
+class gstate:
     ''' A file based state database for information persistance. '''
     root = config.global_state_root()
 
     @staticmethod
     def set(key, value):
-        if not os.path.isdir(GState.root):
-            os.mkdir(GState.root)
-        with open(pjoin(GState.root, key), 'w') as f:
+        if not os.path.isdir(gstate.root):
+            os.mkdir(gstate.root)
+        with open(pjoin(gstate.root, key), 'w') as f:
             f.write(value)
 
     @staticmethod
     def get(key):
-        if not os.path.isfile(pjoin(GState.root, key)): return None
-        with open(pjoin(GState.root, key)) as f:
+        if not os.path.isfile(pjoin(gstate.root, key)): return None
+        with open(pjoin(gstate.root, key)) as f:
             return f.read().strip()
 
     @staticmethod
     def clear(key):
-        path = pjoin(GState.root, key)
+        path = pjoin(gstate.root, key)
         if os.path.isfile(path):
             os.remove(path)
 
     @staticmethod
     def set_evaluation_result(content):
-        GState.set(config._evaluation_result_, content)
+        gstate.set(config._evaluation_result_, content)
     @staticmethod
     def get_evaluation_result():
-        return GState.get(config._evaluation_result_)
+        return gstate.get(config._evaluation_result_)
+
+    progress_list = 'progress_list'
+    @staticmethod
+    def set_progress_list(li=['prepare/clone_code', 'prepare/compile']):
+        '''
+        list of str,
+        '''
+        gstate.set(gstate.progress_list, li)
+    @staticmethod
+    def get_progress_list():
+        return gstate.get(gstate.progress_list)
 

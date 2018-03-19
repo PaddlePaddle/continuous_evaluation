@@ -6,7 +6,7 @@ import json
 import logging
 import sys; sys.path.insert(0, '')
 import config
-from gstate import GState
+from gstate import gstate
 
 
 class log:
@@ -45,7 +45,7 @@ class PathRecover(object):
             cd @(self.pre_path)
 
 def evaluation_succeed():
-    for line in GState.get_evaluation_result().split('\n'):
+    for line in gstate.get_evaluation_result().split('\n'):
         model, status = line.strip().split('\t')
         if status != 'pass':
             return False
@@ -71,11 +71,40 @@ def write_init_models_factors_to_gstate():
                 #         1 pass
                 #        -1 fail
                 models_.append((model, [(factor.name, 0) for factor in env['tracking_factors']],))
-        GState.set(config._model_factors_, json.dumps(models_))
+        gstate.set(config._model_factors_, json.dumps(models_))
 
-def update_model_factors_status():
-    ''' update from _evaluation_result_. '''
-    result = GState.get(config._evaluation_result_)
+def update_model_factors_status(model, factor, status):
+    ''' update _model_factors_ to tell the frontend the current status
+
+    model: model name.
+    factor: factor name.
+    status: 'pass' or 'error info'.
+    '''
+    commit = gstate.get(config._state_paddle_code_commit_)
+    status = json.loads(gstate.get(config._model_factors_))
+    offset = status.index(model)
+    assert offset != -1
+    model = status[offset]
+    for factor_ in model:
+        if factor_[0] == factor:
+            if status != 'pass':
+                factor_[1] = -1
+                factor_[2] = status
+            else:
+                factor_[1] = 1
+            break
+    gstate.set(config._model_factors_, json.dumps(status))
+
+def init_progress_list_to_gstate():
+    pass
+
+def update_fail_commit_to_gstate():
+    commit = gstate.get(config._state_paddle_code_commit_)
+    gstate.set(config._fail_commit_, commit)
+
+def update_success_commit_to_gstate(commit):
+    gstate.set(config._success_commit_, commit)
+
 
 SUC = True, ""
 

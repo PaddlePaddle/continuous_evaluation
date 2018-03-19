@@ -37,11 +37,13 @@ log_path = lambda: pjoin(workspace, 'modelci.log')
 
 test_root = pjoin(workspace, "_test_tmp_dir")
 
-# keys for GState
+# keys for gstate
 global_state_root = lambda: pjoin(workspace, "_states")
 _state_paddle_code_commit_ = "paddle_code_commit"
 _evaluation_result_ = "evaluation_result"
 _model_factors_ = "model_factors.json"
+_fail_commit_ = 'fail_commit'
+_success_commit_ = 'success_commit'
 
 ############################# DETAILS BELOW #############################
 

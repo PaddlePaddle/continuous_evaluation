@@ -36,7 +36,7 @@ class TestMain(unittest.TestCase):
             content = '\n'.join([
                     'model0\tpass',
                     'model1\tpass',])
-            utils.GState.set(config._evaluation_result_, content)
+            utils.gstate.set(config._evaluation_result_, content)
             self.assertTrue(utils.evaluation_succeed())
 
     def test_evaluation_succeed_fail(self):
@@ -46,19 +46,19 @@ class TestMain(unittest.TestCase):
             content = '\n'.join([
                     'model0\tpass',
                     'model1\tfail',])
-            utils.GState.set(config._evaluation_result_, content)
+            utils.gstate.set(config._evaluation_result_, content)
             self.assertFalse(utils.evaluation_succeed())
 
     def test_global_state_set(self):
         with utils.PathRecover():
-            utils.GState.set("name", "jomn")
-            self.assertEqual(utils.GState.get("name"), "jomn")
+            utils.gstate.set("name", "jomn")
+            self.assertEqual(utils.gstate.get("name"), "jomn")
 
     def test_write_init_models_factors_to_gstate(self):
         import baseline
         with utils.PathRecover():
             baseline.strategy.refresh_workspace()
-            utils.update_models_structure_to_gstate()
+            utils.write_init_models_factors_to_gstate()
 
 
 unittest.main(module='utils_test')

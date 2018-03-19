@@ -119,7 +119,7 @@ class GitStrategy(Strategy):
                 status = 'passed' if self.evaluation_passed() else 'failed',)
             details = [
                 "paddle commit: %s" % repo.get_paddle_commit(),
-                "evaluation status:\n %s" % GState.get_evaluation_result()
+                "evaluation status:\n %s" % gstate.get_evaluation_result()
             ]
             cd @(self.local_dst)
             log.info('commit current kpi to branch[%s]' % self.cur_branch)

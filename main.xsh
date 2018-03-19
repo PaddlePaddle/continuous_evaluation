@@ -37,7 +37,7 @@ def test_models():
     baseline.strategy.refresh_workspace()
     evaluate_status = []
     log.info('begin to evaluate model')
-    GState.clear(config._evaluation_result_)
+    gstate.clear(config._evaluation_result_)
     for model in models():
         log.info('get model', model)
         status = 'fail'
@@ -52,8 +52,13 @@ def test_models():
         evaluate_status.append((model, status))
         update_evaluation_status(evaluate_status)
 
-    log.warn('evaluation result:\n%s' % GState.get_evaluation_result())
+    log.warn('evaluation result:\n%s' % gstate.get_evaluation_result())
     baseline.strategy()
+
+    if evaluation_succeed():
+        update_success_commit_to_gstate()
+    else:
+        update_fail_commit_to_gstate()
 
 def test_model(model_name):
     model_dir = pjoin(config.models_path(), model_name)
@@ -87,19 +92,19 @@ def test_model(model_name):
 def update_evaluation_status(status):
     ''' persist the evaluation status to path '''
     lines = ['%s\t%s' % kv for kv in status]
-    GState.set_evaluation_result('\n'.join(lines))
+    gstate.set_evaluation_result('\n'.join(lines))
 
 def source_code_updated():
     '''
     whether paddle source is updated
     '''
     cur_commit = repo.get_paddle_commit()
-    last_commit = GState.get(config._state_paddle_code_commit_)
+    last_commit = gstate.get(config._state_paddle_code_commit_)
     updated = last_commit is None or cur_commit != last_commit
     if not updated:
         log.info("paddle source code is not changed, skip test, commitid %s" % cur_commit)
         return updated
-    GState.set(config._state_paddle_code_commit_, cur_commit)
+    gstate.set(config._state_paddle_code_commit_, cur_commit)
     return updated
 
 test_latest_source()
