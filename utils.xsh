@@ -81,6 +81,14 @@ def write_init_models_factors_to_gstate():
             models_.append((model, [(factor.name, 0, '') for factor in env['tracking_factors']],))
         gstate.set(config._model_factors_, json.dumps(models_))
 
+def write_init_progress_to_gstate():
+    status = json.loads(gstate.get(config._model_factors_))
+    progress = []
+    for model in status:
+        for factor in model[1]:
+            progress.append('%s/%s' % (model[0], factor[0]))
+    gstate.set_progress_list(json.dumps(progress))
+
 def update_model_factors_status(model, factor, status):
     ''' update _model_factors_ to tell the frontend the current status
 
@@ -102,6 +110,7 @@ def update_model_factors_status(model, factor, status):
                     break
             break
     gstate.set(config._model_factors_, json.dumps(state))
+    gstate.set_current_progress("%s/%s" % (model, factor))
 
 def init_progress_list_to_gstate():
     pass

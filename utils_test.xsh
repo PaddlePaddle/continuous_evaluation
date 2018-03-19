@@ -93,5 +93,15 @@ class TestMain(unittest.TestCase):
                             self.assertEqual(factor[1], 1)
                     break
 
+    def test_write_init_progress_to_gstate(self):
+        import baseline
+        with utils.PathRecover():
+            baseline.strategy.refresh_workspace()
+            utils.write_init_models_factors_to_gstate()
+            utils.write_init_progress_to_gstate()
+
+            progress = json.loads(gstate.get_progress_list())
+            self.assertTrue(progress)
+
 
 unittest.main(module='utils_test')

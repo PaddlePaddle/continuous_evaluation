@@ -25,6 +25,7 @@ def test_released_whl():
 def test_latest_source():
     baseline.strategy.refresh_workspace()
     write_init_models_factors_to_gstate()
+    write_init_progress_to_gstate()
     # update_model_factors_status('prepare', 'update_baseline', 'pass')
 
     log.warn('init local paddle repo %s' % config.local_repo_path())

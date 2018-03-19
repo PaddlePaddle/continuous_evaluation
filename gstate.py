@@ -33,7 +33,7 @@ class gstate:
     def get_evaluation_result():
         return gstate.get(config._evaluation_result_)
 
-    progress_list = 'progress_list'
+    progress_list = 'progress_list.json'
     @staticmethod
     def set_progress_list(li=['prepare/clone_code', 'prepare/compile']):
         '''
@@ -43,4 +43,12 @@ class gstate:
     @staticmethod
     def get_progress_list():
         return gstate.get(gstate.progress_list)
+
+    current_progress = 'current_progress.json'
+    @staticmethod
+    def set_current_progress(v):
+        gstate.set(gstate.current_progress, v)
+    @staticmethod
+    def get_current_progress():
+        return gstate.get(gstate.current_progress)
 

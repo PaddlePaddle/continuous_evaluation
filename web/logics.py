@@ -1,3 +1,4 @@
+from __future__ import division
 import sys; sys.path.append('..')
 import config
 import json
@@ -33,7 +34,15 @@ def current_working_on_commit():
     return commit if commit else 'none'
 
 def current_progress():
-    return 0.56
+    progresses = json.loads(gstate.get_progress_list())
+    progress = gstate.get_current_progress()
+    if progress:
+        offset = progresses.index(progress)
+        assert offset != -1
+        ratio = (offset + 1) / len(progresses)
+    else:
+        ratio = 0
+    return ratio
 
 def model_evaluation_status():
     model_factor_status = gstate.get(config._model_factors_)
