@@ -1,5 +1,6 @@
 <!DOCTYPE HTML>
 <html>
+<meta http-equiv="refresh" content="6">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <head>
     <title>PaddlePaddle Model Continuous Evaluation</title>
@@ -117,7 +118,9 @@
 
 <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="/">ModelCE</a>
+<!--
     <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+-->
 </nav>
 
 <div class="container-fluid">
@@ -126,7 +129,11 @@
             <div class="sidebar-sticky">
                 <ul class="nav flex-column">
                     <li class="nav-item"> <!-- the main page -->
+                        {% if current_module == "dashboard" %}
                         <a class="nav-link active" href="/">
+                        {% else %}
+                        <a class="nav-link" href="/">
+                        {% endif %}
                             <span data-feather="home"></span>
                             Dashboard
                             <span class="sr-only">(current)</span>
@@ -142,9 +149,14 @@
                     -->
 
                     <li class="nav-item">
+                        {% if current_module == "history" %}
+                        <a class="nav-link active" href="/history">
+                        {% else %}
                         <a class="nav-link" href="/history">
+                        {% endif %}
                             <span data-feather="book"></span>
                             History
+                            <span class="sr-only">(current)</span>
                         </a>
                     </li>
                 </ul>

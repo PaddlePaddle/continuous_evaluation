@@ -118,10 +118,9 @@ def write_history_to_gstate():
         spliter = '__'
         history = $(git log --pretty=format:">>>%H__%ai__%s__%B")
         records = []
-        print('history', repr(history))
         for line in history.split('\n'):
-            if line.startswith('"'): line = line[1:-1]
-            print('line', repr(line))
+            if line.startswith('"'): line = line[1:]
+            if line.endswith('"'): line = line[:-1]
             if not line: continue
             if line.startswith('>>>'):
                 fields = line.strip().split(spliter)
@@ -130,7 +129,6 @@ def write_history_to_gstate():
                 body = fields[3]
                 records.append([commitid, date, subject, body])
             else:
-                print('records', records)
                 # append body
                 records[-1][3] += '\n' + line
         gstate.update_baseline_history(json.dumps(records))
@@ -139,7 +137,8 @@ def update_fail_commit_to_gstate():
     commit = gstate.get(config._state_paddle_code_commit_)
     gstate.set(config._fail_commit_, commit)
 
-def update_success_commit_to_gstate(commit):
+def update_success_commit_to_gstate():
+    commit = gstate.get(config._state_paddle_code_commit_)
     gstate.set(config._success_commit_, commit)
 
 

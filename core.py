@@ -53,18 +53,21 @@ class Factor(object):
 class GreaterWorseFactor(Factor):
     ''' Evaluator for any factors that large value is bad, trainning cost for example. '''
 
-    def __init__(self, name, diff_thre):
+    def __init__(self, name, diff_thre, skip_head=2):
         '''
         diff_thre: difference threshold.
         '''
         super(GreaterWorseFactor, self).__init__(out_file='%s_factor.txt' %
                                                  name)
+        self.skip_head = skip_head
         self.name = name
         self.diff_thre = diff_thre
 
     def evaluate(self, root):
-        cur_data = load_records_from(pjoin(root, self.out_file))
-        his_data = load_records_from(pjoin(root, self.his_file))
+        cur_data = load_records_from(
+            pjoin(root, self.out_file))[self.skip_head:]
+        his_data = load_records_from(
+            pjoin(root, self.his_file))[self.skip_head:]
         diff = cur_data - his_data
         larger = diff > 0
         self.ratios = diff[larger] / his_data[larger]

@@ -9,17 +9,31 @@
     <div class="container-fluid border-bottom">
         <div class="row">
             <div class="col-sm">
+                {% if last_success_commit == "none" %}
                 <span class="badge badge-success">Last success</span> <a href="#" class="alert-link">{{ last_success_commit }}</a>
+                {% else %}
+                <span class="badge badge-success">Last success</span> <a href="{{ paddle_commit_url }}/{{ last_success_commit }}" class="alert-link">{{ last_success_commit }}</a>
+                {% endif %}
             </div>
             <div class="col-sm">
+                {% if last_fail_commit == "none" %}
                 <span class="badge badge-danger">Last fail</span> <a href="#" class="alert-link">{{ last_fail_commit }}</a>
+                {% else %}
+                <span class="badge badge-danger">Last fail</span> <a href="{{ paddle_commit_url }}/{{ last_fail_commit }}" class="alert-link">{{ last_fail_commit }}</a>
+                {% endif %}
             </div>
             <hr/>
         </div>
 
+        {%if source_code_updated %}
         <div class="row alert alert-primary">
-            Currently working on &nbsp;<a href="#" class="alert-link">{{ current_working_on_commit }}</a>
+            Currently working on Paddle version: &nbsp;<a href="#" class="alert-link">{{ current_working_on_commit }}</a>
         </div>
+        {% else %}
+        <div class="row alert alert-secondary">
+            Hold, waiting for new source update.
+        </div>
+        {% endif %}
 
         <div class="row progress modelce-row">
             <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ current_progress }}" aria-valuemin=0" aria-valuemax="100" style="width:{{ current_progress }}%">

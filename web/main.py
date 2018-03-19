@@ -11,12 +11,16 @@ app = Flask(
     "modelce", static_url_path=STATIC_DIR, template_folder=TEMPLATE_DIR)
 
 baseline_commit_url = "https://github.com/Superjomn/paddle-modelci-baseline/commit"
+paddle_commit_url = "https://github.com/PaddlePaddle/Paddle/commit"
 
 
 @app.route('/')
 def index():
     return render_template(
         'dashboard.html',
+        current_module='dashboard',
+        paddle_commit_url=paddle_commit_url,
+        source_code_updated=logics.source_code_updated(),
         baseline_commit_url=baseline_commit_url,
         last_success_commit=logics.last_success_commit(),
         last_fail_commit=logics.last_fail_commit(),
@@ -29,6 +33,7 @@ def index():
 def history():
     return render_template(
         'history.html',
+        current_module='history',
         baseline_commit_url=baseline_commit_url,
         baseline_history=logics.baseline_history())
 
@@ -41,4 +46,4 @@ def serve_static(path):
 if __name__ == '__main__':
     host = '0.0.0.0'
     port = 8080
-    app.run(debug=True, host=host, port=port)
+    app.run(debug=False, host=host, port=port)

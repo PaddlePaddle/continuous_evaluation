@@ -4,6 +4,7 @@ $XONSH_SHOW_TRACEBACK = True
 
 import os
 import sys; sys.path.insert(0, '')
+import time
 
 import prepare
 import config
@@ -26,6 +27,7 @@ def test_latest_source():
     baseline.strategy.refresh_workspace()
     write_init_models_factors_to_gstate()
     write_init_progress_to_gstate()
+    write_history_to_gstate()
     # update_model_factors_status('prepare', 'update_baseline', 'pass')
 
     log.warn('init local paddle repo %s' % config.local_repo_path())
@@ -38,6 +40,8 @@ def test_latest_source():
         prepare.compile()
         prepare.install_whl()
         test_models()
+        # update baseline
+        baseline.strategy()
 
 def test_models():
     cd @(config.workspace)
@@ -59,8 +63,6 @@ def test_models():
         update_evaluation_status(evaluate_status)
 
     log.warn('evaluation result:\n%s' % gstate.get_evaluation_result())
-    baseline.strategy()
-
     if evaluation_succeed():
         update_success_commit_to_gstate()
     else:
@@ -109,10 +111,13 @@ def source_code_updated():
     cur_commit = repo.get_paddle_commit()
     last_commit = gstate.get(config._state_paddle_code_commit_)
     updated = last_commit is None or cur_commit != last_commit
+    gstate.set_source_code_updated(updated)
     if not updated:
         log.info("paddle source code is not changed, skip test, commitid %s" % cur_commit)
-        return updated
-    gstate.set(config._state_paddle_code_commit_, cur_commit)
+    else:
+        gstate.set(config._state_paddle_code_commit_, cur_commit)
     return updated
 
-test_latest_source()
+for i in range(5000):
+    test_latest_source()
+    time.sleep(60)

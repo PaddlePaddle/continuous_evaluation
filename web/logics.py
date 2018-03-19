@@ -39,6 +39,7 @@ def current_working_on_commit():
 
 
 def current_progress():
+    if not source_code_updated(): return 0
     progresses = json.loads(gstate.get_progress_list())
     progress = gstate.get_current_progress()
     if progress:
@@ -64,3 +65,7 @@ def model_evaluation_status():
 def baseline_history():
     history = json.loads(gstate.get_baseline_history())
     return history
+
+
+def source_code_updated():
+    return gstate.get_source_code_updated()

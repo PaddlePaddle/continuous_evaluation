@@ -13,7 +13,7 @@ class gstate:
         if not os.path.isdir(gstate.root):
             os.mkdir(gstate.root)
         with open(pjoin(gstate.root, key), 'w') as f:
-            f.write(value)
+            f.write(str(value))
 
     @staticmethod
     def get(key):
@@ -67,3 +67,14 @@ class gstate:
     @staticmethod
     def get_baseline_history():
         return gstate.get(gstate.baseline_history)
+
+    source_code_updated = 'source_code_updated'
+
+    @staticmethod
+    def set_source_code_updated(updated):
+        ''' updated: bool, yes/no '''
+        gstate.set(gstate.source_code_updated, 'yes' if updated else 'no')
+
+    @staticmethod
+    def get_source_code_updated():
+        return gstate.get(gstate.source_code_updated) == 'yes'
