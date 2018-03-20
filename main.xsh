@@ -64,7 +64,7 @@ def test_models():
 
     log.warn('evaluation result:\n%s' % gstate.get_evaluation_result())
     commitid = repo.get_paddle_commit()
-    date = time.strftime("%d/%m/%Y %H:%M:%S")
+    date = time.strftime("%m-%d %H:%M:%S")
     if evaluation_succeed():
         update_success_commit_to_gstate()
         gstate.add_evaluation_record(commitid, True, date)

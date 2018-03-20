@@ -10,7 +10,9 @@ TEMPLATE_DIR = os.path.join(SERVER_PATH, "template")
 
 app = Flask(
     "modelce", static_url_path=STATIC_DIR, template_folder=TEMPLATE_DIR)
-cache = Cache(app, config={'CACHE_TYPE': 'filesystem', 'CACHE_DIR': './_cache'})
+cache = Cache(
+    app, config={'CACHE_TYPE': 'filesystem',
+                 'CACHE_DIR': './_cache'})
 
 baseline_commit_url = "https://github.com/Superjomn/paddle-modelci-baseline/commit"
 paddle_commit_url = "https://github.com/PaddlePaddle/Paddle/commit"

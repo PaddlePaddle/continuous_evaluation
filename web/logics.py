@@ -70,7 +70,8 @@ def baseline_history():
 def source_code_updated():
     return gstate.get_source_code_updated()
 
+
 def evaluation_records():
     history = gstate.get_evaluation_records()
-    reversed(history)
+    history = reversed(history)
     return history
