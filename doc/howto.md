@@ -83,3 +83,20 @@ for batch_id, data in enumerate(train_reader()):
 for factor in tracking_factors:
     factor.persist()
 ```
+
+## Running an evaluation locally
+
+Each evaluation can execute seperately.
+
+Lets take `resnet30` for example
+
+```sh
+git clone https://github.com/PaddlePaddle/MacroCE.git
+
+cd MacroCE
+git clone https://github.com/Superjomn/paddle-modelci-baseline.git models
+
+cd models/resnet30
+export modelci_root=`pwd`/../..
+./train.xsh
+```
