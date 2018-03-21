@@ -1,0 +1,4 @@
+xonsh
+numpy
+flask
+flask-cache
