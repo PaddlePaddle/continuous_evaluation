@@ -37,11 +37,11 @@ def test_latest_source():
     update_model_factors_status('prepare', 'update_source_code', 'pass')
 
     if source_code_updated():
-        prepare.compile()
-        prepare.install_whl()
+        # prepare.compile()
+        # prepare.install_whl()
         test_models()
-        # update baseline
-        baseline.strategy()
+        # baseline.strategy() # update baseline
+        ArchiveLogs("logs")()
 
 def test_models():
     cd @(config.workspace)
@@ -77,7 +77,7 @@ def test_model(model_name):
     log.info('model dir', model_dir)
     def run_model():
         log.warn('running model ', model_name)
-        ./train.xsh
+        ./train.xsh > train.log 2>&1
         log.warn('finish running model')
     def evaluate_model():
         log.warn('evaluating model ', model_name)
@@ -122,6 +122,8 @@ def source_code_updated():
         gstate.set(config._state_paddle_code_commit_, cur_commit)
     return updated
 
-for i in range(5000):
-    test_latest_source()
-    time.sleep(60)
+
+# for i in range(5000):
+#     test_latest_source()
+#     time.sleep(60)
+test_latest_source()

@@ -1,8 +1,11 @@
 import os
 import sys
+import logging
 from flask import Flask, redirect, send_from_directory, render_template
 from flask.ext.cache import Cache
 import logics
+
+logging.basicConfig()
 
 SERVER_PATH = os.path.abspath(os.path.dirname(sys.argv[0]))
 STATIC_DIR = os.path.join(SERVER_PATH, "static")

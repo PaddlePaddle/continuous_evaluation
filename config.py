@@ -15,7 +15,7 @@ repo_url = lambda: 'https://github.com/PaddlePaddle/Paddle.git'
 local_repo_path = lambda: pjoin(workspace, 'paddle_code')
 
 # the compiled paddle whl to test
-compiled_whl_path = lambda: '/usr/local/opt/paddle/share/wheels/paddlepaddle_gpu-0.11.1a1-cp27-cp27mu-linux_x86_64.whl'
+compiled_whl_path = lambda: '/usr/local/opt/paddle/share/wheels/paddlepaddle_gpu-0.11.1a2-cp27-cp27mu-linux_x86_64.whl'
 
 # TODO change a official repo
 # NOTE make sure that the evaluator machine has the access rights.

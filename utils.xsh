@@ -8,6 +8,8 @@ import logging
 import sys; sys.path.insert(0, '')
 import config
 from gstate import gstate
+from archive import Archive
+from db import MongoDB
 
 
 class log:
@@ -141,6 +143,28 @@ def update_fail_commit_to_gstate():
 def update_success_commit_to_gstate():
     commit = gstate.get(config._state_paddle_code_commit_)
     gstate.set(config._success_commit_, commit)
+
+
+class ArchiveLogs:
+    def __init__(self, dbname):
+        self.db = MongoDB(dbname)
+        self.commit = get_paddle_commit()
+
+    def __call__(self):
+        self.store_main_log()
+        self.store_evaluation_logs()
+
+    def store_main_log(self):
+        archive = Archive(self.db, 'main.log')
+        archive.insert_file(self.commit, config.log_path())
+
+    def store_evaluation_logs(self):
+        archive = Archive(self.db, 'evaluation.logs')
+        dic = {}
+        for model in models():
+            log_path = pjoin(model, 'train.log')
+            dic[model] = open(log_path).read()
+        archive.insert_rcd(self.commit, dic)
 
 
 SUC = True, ""
