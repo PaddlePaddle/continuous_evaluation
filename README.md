@@ -1,149 +1,72 @@
-# Model CI
+# Continuous Evaluation
 
-The users occasionally find a negligible performance or precision issue between different Paddle versions. Though we have unit tests for each class and Travis-CI to ensures the precision of each operator, there is no logic to ensure the model (a composition of several operators) works as reliable as the operators.
+## Problem Settings
 
-There are several conditions where an existing model will fail either in performance or precision:
+Developers of an AI system want to see their efforts are improving the effectiveness of their work. For example, if we are developing an image classification system, we would like to see that with the merge of more and more pull requests, the system could have higher precision and higher recall values.  From this example, we see the following concepts:
 
-1. Incomplete coverage of test cases. For example, tests lacking precision check.
-2. Poor performance update, currently, we have no performance tracker for each operator.
-3. Developers generally forget to update API use in other repositories such as `paddle/models`.
+1. An AI system has several KPIs.  The image classification system has two KPIs -- precision and recall.
+1. KPIs are supposed to be improved (increment or decrement) with respect to Git commits.
 
-The model-CI module is proposed to enhance the weaknesses above and track the overall performance and precision of the model granularity, besides monitoring the change of python API.
+## The Solution
 
-## Make KPI tracking extensible
+We proposal to develop a tool, the *Continuous Evaluation* program, which checks out each Git commits (or, for saving computational resource, only Git merge commits on the main branch), builds and runs the *KPI evaluation programs* in the commit.  
 
-There are some general KPIs including `train cost`, `validate cost` and `duration`, but some other KPIs such as `memory usage`, `gpu_memory_usage` and so on should add in the test.
+An KPI evaluation program is the one that computes and prints one or more KPIs.  For example, all programs whose filenames have the suffix `_kpi`.
 
-To make it simple and clear to add a new KPI into the CI, the framework will offer some interfaces to standardize the functions of KPI tracker, such as a base class called `Factor` (the `Factor` represents KPI in code for better readibility).
+Given that each Git commit is immutable and has a timestamp, and each Git commit contains some KPI evaluation programs that prints a number, say, N, KPI values, the running of the continuous evaluation program with the AI system's Git repository should fill a table with the following scheme:
 
-```python
-class Factor(object):
-    dic = {}
-    def __init__(self, out_file, his_file=None):
-        self.out_file = out_file
-        self.his_file = os.path.join('history', out_file)
-        self.factors = []
+| Git commit SHA | Date & Time | KPI 1 (precision) | KPI 2 (recall) |
+|----------------|-------------|-------------------|----------------|
+| 195aef12       | 2018-01-01  | 50.01%            | 49.17%         |
+| 4u059674       | 2018-01-02  | 51.01%            | 55.41%         |
+| 39bcc9e1       | 2018-01-03  | 29.01%            | 78.17%         |
+| 867abbce       | 2018-01-04  | 58.01%            | 40.92%         |
 
-        Factor.__register__(self.__class__)
+Here we noticed that the over trends of the precision grows w.r.t. date/time, but the number 29.01% on 2018-01-03 is a decrease, thus warns us about something wrong with the merge commit 39bcc9e1 and reminds us to check the corresponding pull request.
 
-    def add_record(self, r): # called when the model run, add execution details.
-        self.factors.append(r)
+## Components in the Solution
 
-    def test(): # called when test
-        # can be something comparing the execution details with historical data.
-        raise NotImplementedError
+The AI system to be monitored must include:
 
-    @staticmethod
-    def __register__(factor): # factor should be a subclass
-        assert isinstance(factor, Factor)
-        key = factor.__name__
-        if key in Factor.dic:
-            assert Factor.dic[key] is factor
-        else:
-            Factor.dic[key] = factor
+1. One or more KPI evaluation programs that prints the KPI value.
+1. A bash script, say `./kpi.bash` that builds and runs the KPI evaluation programs.
 
-    def __del__(self):
-        if self.factors:
-            # write to file self.out_file
+The Continuous Evaluation system should have the following features:
+
+1. A program or a function `build_and_eval(string git_repo, string git_commit_sha, Storage store)`, which
+   - checks out the source code of the specified Git commit
+   - builds the commit
+   - runs the KPI programs
+   - save KPI values into the table in `store`.
+
+1. A program `build_and_eval_all(string git_repo, Storage store)`, which
+   - loop over each merge commit in some branches (`develop` and `master`)
+   - for each commit, if the row in the above table is empty, call `build_and_eval(repo, commit, store)`.
+   
+1. The storage service that can maintain the above table, and preferablly analyze and plot the data.  A good choice is Google Doc.
+
+## Detailed Design
+
+Consider writing `build_and_eval` as a Bash function. A simple reference implementation is as follows:
+
+```bash
+function build_and_eval(repo_url, commit, local_repo_dir, google_doc_api_key) {
+  if [[ -d $local_repo_dir ]]; then
+    git clone $repo_url -o $local_repo_dir
+  fi
+  
+  cd $local_repo_dir
+  
+  git checkout -b current $commit
+  
+  ./kpi.bash | \                                         # Build and run KPI evluation programs.
+    awk '$1 == "KPI" { printf("%s %s", $2, $3); }' | \   # Extract printed KPI names and values.
+    google-doc-cli google_doc_api_key repo_url commit    # Write to table repo_url and row commit.
+    
+  git checkout master
+  git branch -d current
+}
 ```
 
-More factors can be integrated into the test framework, for example, a factor tracker which tests the training duration can be added in the following way
-
-```python
-class TrainDurationFactor(Factor):
-    def __init__(self, threshold):
-        super(TrainDurationFactor, self).__init__('train.dura.txt')
-        self.threshold = threshold
-
-    def test(self):
-        cur_data = _load_nparray_from_file(self.out_file)
-        his_data = _load_nparray_from_file(self.his_file)
-        diff = np.abs(cur_data - his_data) / his_data
-        if (diff > self.threshold).any():
-            raise TestError
-```
-
-A testable model should have a file called `continuous_evaluation.py` with some configurations about those factors to use like
-
-```python
-# this is a demo for continuous_evaluation.py
-train_duration_factor = TrainDurationFactor(0.1)
-valid_duration_factor = ValidDurationFactor()
-train_memory_factor = TrainMemoryFactor()
-
-tracking_factors = [ train_duration_factor, valid_duration_factor, train_memory_factor ]
-```
-
-Inside the model, one should call the factor trackers and add records.
-
-```python
-# configuration of some model
-import paddle
-import meta
-# ...
-
-
-for batch in batches:
-    # ...
-    duration = _get_duration_of_this_batch()
-    train_duration_factor.add_record(duration)
-    # ...
-```
-
-and the test framework will test each factor like
-
-```python
-for tracker in some_model.meta.tracking_factors:
-    some_model._run() # run and tracking_factors will collect running status
-    try:
-        tracker.test()
-    except TestError:
-        _collect_error_info
-        _ring_alarm
-```
-
-## Keep updating the baseline
-The ModelCI will keep comparing the KPIs of the latest code with the last successful evaluated version,
-if the current version has better KPIs than baseline, update the baseline, otherwise ring an alarm.
-
-## Build a testable model
-
-The models should be placed in `./models` directory, each has a sub-directory, and a `train.xsh` script to define how to run this model. After triggering the `train.xsh`, all the data of `tracking_factors` should be created.
-
-For example, a normal model might have the following logic
-
-```python
-# train.xsh
-run_train_cpu
-run_train_gpu
-```
-
-To make the testing logic stable, the testable model should ensure that
-
-- fix the random seed to make result reproducible
-- just run 10 or 20 batches, and the whole execution take no more than 30 mins
-- run different modes sequentially, not run them parallelly
-
-## Persistence of log
-
-The log of each execution should be stored somewhere,
-the simplest way is to use Git to maintain a versionable history.
-
-After each execution, add all the logs and statistic result and commit with a comment with a
-template like
-
-```
-{success_or_not} {short summary of the cause}
-
-execution duration: {overall_duration}
-paddle code version: {commitid}
-```
-
-## Alarm
-
-If a test failed, ring an alarm by
-
-- sending email to `paddle-dev@baidu.com` including
-  - error type
-  - the details of the tracked abnormal factors
-- update the error information and push to git
+Survey if there is a convenient way, e.g., a command line tool, that can write data into a Google Doc spreadsheet.
+   
