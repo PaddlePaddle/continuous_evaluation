@@ -5,6 +5,7 @@ $XONSH_SHOW_TRACEBACK = True
 import sys; sys.path.insert(0, '')
 import config
 
+num_workers = os.environ.get('num_workers', 8)
 
 cd @(config.paddle_path)
 mkdir -p build
@@ -22,7 +23,7 @@ cmake .. -DWITH_TESTING=OFF \
 # clean whl
 rm -rf python/dist/*
 rm -rf python/build
-make -j8
+make -j $num_workers
 make install
 
 pip install --upgrade python/dist/*.whl
