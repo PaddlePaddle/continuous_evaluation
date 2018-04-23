@@ -4,6 +4,7 @@ $XONSH_SHOW_TRACEBACK = True
 
 import sys; sys.path.insert(0, '')
 import config
+import os
 
 num_workers = os.environ.get('num_workers', 8)
 
