@@ -23,7 +23,7 @@ cmake .. -DWITH_TESTING=OFF \
 # clean whl
 rm -rf python/dist/*
 rm -rf python/build
-make -j $num_workers
+make -j @(num_workers)
 make install
 
 pip install --upgrade python/dist/*.whl
