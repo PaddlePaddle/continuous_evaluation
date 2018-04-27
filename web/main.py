@@ -26,6 +26,7 @@ db = MongoDB(config.db_name)
 
 
 @app.route('/')
+@cache.cached(timeout=120)
 def index():
     '''
     Show the status, the contents:
@@ -41,6 +42,7 @@ def index():
 
 
 @app.route('/commit/details', methods=["GET"])
+@cache.cached(timeout=120)
 def commit_details():
     commit = request.args.get('commit')
 
@@ -51,6 +53,7 @@ def commit_details():
 
 
 @app.route('/commit/compare', methods=["GET"])
+@cache.cached(timeout=120)
 def commit_compare():
     if 'cur' not in request.args:
         commits = get_commits()
@@ -72,5 +75,5 @@ def commit_compare():
 
 if __name__ == '__main__':
     host = '0.0.0.0'
-    port = 8020
-    app.run(debug=True, host=host, port=port)
+    port = 80
+    app.run(debug=False, host=host, port=port, threaded=True)
