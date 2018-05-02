@@ -8,8 +8,8 @@ import json
 db = MongoDB(config.db_name)
 
 
-def add_evaluation_record(commitid, date, task, passed, infos, kpis, kpi_types,
-                          kpis):
+def add_evaluation_record(commitid, date, task, passed, infos, kpis,
+                          kpi_types, kpi_objs):
     '''
     persist the evaluation infomation of a task to the database.
 
@@ -18,7 +18,8 @@ def add_evaluation_record(commitid, date, task, passed, infos, kpis, kpi_types,
     task: str
     passed: bool
     infos: list of string
-    kpis: the kpis in a task
+    kpis: the kpis in a task, name -> kpivalues
+    kpi_objs: objects of KPI.
     '''
     # delete old task record for this commit
     db.remove(config.table_name, {
@@ -39,8 +40,8 @@ def add_evaluation_record(commitid, date, task, passed, infos, kpis, kpi_types,
         'kpis-values':
         json.dumps(list(kpis[key].tolist() for key in kpis.keys())),
         'kpi-types': [kpi_types[key] for key in kpis.keys()],
-        'kpi-activeds': [kpi.actived for kpi in kpis],
-        'kpi-unit-reprs': [kpi.unit_repr for kpi in kpis],
-        'kpi-descs': [kpi.desc for kpi in kpis],
+        'kpi-activeds': [kpi.actived for kpi in kpi_objs],
+        'kpi-unit-reprs': [kpi.unit_repr for kpi in kpi_objs],
+        'kpi-descs': [kpi.desc for kpi in kpi_objs],
     }
     db.insert_one(config.table_name, record)

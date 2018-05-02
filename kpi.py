@@ -18,8 +18,7 @@ class Kpi(object):
                  out_file=None,
                  his_file=None,
                  actived=True,
-                 unit_repr=None,
-                 desc=None):
+                 unit_repr=None):
         ''' Interface for Kpi tracker.  
         actived: whether this test is turn on
             The test will yield error if failed only if it is actived.
@@ -31,7 +30,6 @@ class Kpi(object):
         self.his_file = "latest_kpis/" + out_file if his_file is None else his_file
         self.actived = actived
         self.unit_repr = unit_repr
-        self.desc = desc
         self.records = []
 
     def add_record(self, rcd):
