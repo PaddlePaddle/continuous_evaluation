@@ -5,15 +5,16 @@
 analysis the benchmark model kpi
 """
 import numpy as np
-
+from utils import log
 
 class AnalysisKpiData(object):
     """
     Analysis_kpi_data
     """
 
-    def __init__(self, kpis_list):
+    def __init__(self, kpis_status, kpis_list):
         self.kpis_list = kpis_list
+        self.kpis_status = kpis_status
         self.analysis_result = {}
         self.diff_thre = 0.02
 
@@ -47,11 +48,12 @@ class AnalysisKpiData(object):
         """
         suc = True
         for kpi_name in self.analysis_result.keys():
-            if self.analysis_result[kpi_name]['change_rate'] > self.diff_thre:
-                suc = False
-                print("kpi: %s change_tate too bigger !!!!!!!!!!" % kpi_name)
-            else:
-                log.warn('kpi: %s' % kpi_name)
+            is_actived = self.kpis_status[kpi_name]
+            log.warn('kpi: %s, actived: %s' % (kpi_name, is_actived))
+            if is_actived:
+                if self.analysis_result[kpi_name]['change_rate'] > self.diff_thre:
+                    suc = False
+                    print("kpi: %s change_tate too bigger !!!!!!!!!!" % kpi_name)
             print('min:%s max:%s mean:%s median:%s std:%s change_rate:%s' %
                   (self.analysis_result[kpi_name]['min'],
                    self.analysis_result[kpi_name]['max'],
