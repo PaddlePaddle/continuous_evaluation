@@ -10,6 +10,7 @@ import json
 import pprint
 from kpi import Kpi
 from view import *
+from api import *
 import pyecharts
 
 SERVER_PATH = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -33,7 +34,7 @@ def index():
     a list of commitids and their status(passed or not, the info)
     '''
     page, snips = build_index_page()
-    commits = get_commits()
+    commits = CommitRecord.get_all()
     latest_commit = commits[-1].commit
     logics = merge_logics(snips[0].logic(), snips[1].logic(latest_commit))
     print('commits', snips[0].logic())
@@ -41,7 +42,7 @@ def index():
 
 
 @app.route('/commit/details', methods=["GET"])
-@cache.cached(timeout=120)
+#@cache.cached(timeout=5)
 def commit_details():
     commit = request.args.get('commit')
 
@@ -52,10 +53,10 @@ def commit_details():
 
 
 @app.route('/commit/compare', methods=["GET"])
-@cache.cached(timeout=120)
+#@cache.cached(timeout=5)
 def commit_compare():
     if 'cur' not in request.args:
-        commits = get_commits()
+        commits = CommitRecord.get_all()
         latest_commit = commits[-1]
         success_commits = [v for v in filter(lambda r: r.passed, commits)]
         latest_success_commit = success_commits[
