@@ -20,6 +20,7 @@ subprocess.call("WITH_TESTING=OFF "
     "WITH_MKL=ON "
     "WITH_MKLDNN=ON "
     "WITH_DISTRIBUTE=ON "
+    "WITH_ANAKIN=OFF "
     "paddle/scripts/paddle_build.sh build",
     shell=True,
     cwd=config.paddle_path
