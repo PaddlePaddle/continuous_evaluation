@@ -14,6 +14,8 @@ rm -rf python/build
 cd @(config.paddle_path)
 cd build
 
+# paddle_build.sh hides some flags, and some new flags can't be controlled
+# by environment variable, so use cmake and set flag directly.
 cmake .. \
   -DWITH_TESTING=OFF \
   -DWITH_GOLANG=OFF \
