@@ -13,9 +13,9 @@ cd build
 rm -rf python/dist/*
 rm -rf python/build
 
-WITH_TESTING = os.environ.get('WITH_TESTING', 'OFF')
+#WITH_TESTING = os.environ.get('WITH_TESTING', 'OFF')
 
-subprocess.call("WITH_TESTING=%s " % WITH_TESTING
+subprocess.call("WITH_TESTING=OFF "
     "WITH_GOLANG=OFF "
     "CMAKE_BUILD_TYPE=Release "
     "WITH_GPU=ON "
