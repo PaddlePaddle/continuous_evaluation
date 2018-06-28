@@ -15,7 +15,7 @@ rm -rf python/build
 
 #WITH_TESTING = os.environ.get('WITH_TESTING', 'OFF')
 
-subprocess.call("WITH_TESTING=OFF "
+subprocess.call("WITH_TESTING=ON "
     "WITH_GOLANG=OFF "
     "CMAKE_BUILD_TYPE=Release "
     "WITH_GPU=ON "
