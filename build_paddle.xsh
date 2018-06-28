@@ -5,6 +5,7 @@ $XONSH_SHOW_TRACEBACK = True
 import sys; sys.path.insert(0, '')
 import config
 import subprocess
+import os
 
 cd @(config.paddle_path)
 mkdir -p build
@@ -12,8 +13,9 @@ cd build
 rm -rf python/dist/*
 rm -rf python/build
 
+WITH_TESTING = os.environ.get('WITH_TESTING', 'OFF')
 
-subprocess.call("WITH_TESTING=OFF "
+subprocess.call("WITH_TESTING=%s " % WITH_TESTING
     "WITH_GOLANG=OFF "
     "CMAKE_BUILD_TYPE=Release "
     "WITH_GPU=ON "
