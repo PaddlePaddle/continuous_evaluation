@@ -15,7 +15,7 @@ import traceback
 $ceroot=config.workspace
 os.environ['ceroot'] = config.workspace
 mode = os.environ.get('mode', 'evaluation')
-specific_tasks = os.environ.get('specific_tasks', '').split(',')
+specific_tasks = os.environ.get('specific_tasks', '').split(',')[1:]
 
 def parse_args():
     parser= argparse.ArgumentParser("Tool for running CE models")
