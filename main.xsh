@@ -100,8 +100,8 @@ def evaluate_tasks(args):
     exception_task = {}
     
     if specific_tasks:
-        log.warn('run specific tasks', tasks)
         tasks = specific_tasks
+        log.warn('run specific tasks', tasks)
     elif args.modified:
         log.warn('run changed tasks', tasks)
         tasks = [v for v in get_changed_tasks()]
