@@ -103,11 +103,11 @@ def evaluate_tasks(args):
         tasks = specific_tasks
         log.warn('run specific tasks', tasks)
     elif args.modified:
-        log.warn('run changed tasks', tasks)
         tasks = [v for v in get_changed_tasks()]
+        log.warn('run changed tasks', tasks)
     else:
-        log.warn('run all tasks', tasks)
         tasks = [v for v in get_tasks()]
+        log.warn('run all tasks', tasks)
         
     for task in tasks:
         try:
