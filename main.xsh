@@ -15,8 +15,8 @@ import traceback
 $ceroot=config.workspace
 os.environ['ceroot'] = config.workspace
 mode = os.environ.get('mode', 'evaluation')
-specific_tasks = os.environ.get('specific_tasks', '').split(',')
-specific_tasks = [i for i in filter(lambda x : x , specific_tasks)]
+specific_tasks = os.environ.get('specific_tasks', None)
+specific_tasks = specific_tasks.split(',') if specific_tasks else []
 
 
 def parse_args():
