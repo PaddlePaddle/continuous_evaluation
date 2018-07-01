@@ -1,5 +1,6 @@
 from __future__ import division
 import json
+import os
 import numpy as np
 import logging
 from config import pjoin
@@ -19,7 +20,7 @@ class Kpi(object):
                  his_file=None,
                  actived=False,
                  unit_repr=None):
-        ''' Interface for Kpi tracker.  
+        ''' Interface for Kpi tracker.
         actived: whether this test is turn on
             The test will yield error if failed only if it is actived.
         unit_repr: the unit of the KPI, for train_duration, ms for example.
@@ -106,10 +107,10 @@ class GreaterWorseKpi(Kpi):
         It seems that compare every batch is too sensitive. So we just compare KPI.
         '''
         self.root = root
-        cur_data = load_records_from(pjoin(root, self.out_file))[
-            self.skip_head:]
-        his_data = load_records_from(pjoin(root, self.his_file))[
-            self.skip_head:]
+        cur_data = load_records_from(
+            pjoin(root, self.out_file))[self.skip_head:]
+        his_data = load_records_from(
+            pjoin(root, self.his_file))[self.skip_head:]
 
         self.ratio = self.compare_with(cur_data, his_data)
         return (-self.ratio) < self.diff_thre
@@ -187,10 +188,10 @@ class LessWorseKpi(GreaterWorseKpi):
 
     def evaluate(self, root):
         self.root = root
-        cur_data = load_records_from(pjoin(root, self.out_file))[
-            self.skip_head:]
-        his_data = load_records_from(pjoin(root, self.his_file))[
-            self.skip_head:]
+        cur_data = load_records_from(
+            pjoin(root, self.out_file))[self.skip_head:]
+        his_data = load_records_from(
+            pjoin(root, self.his_file))[self.skip_head:]
         self.ratio = self.compare_with(cur_data, his_data)
         return (-self.ratio) < self.diff_thre
 
@@ -224,6 +225,102 @@ class LessWorseKpi(GreaterWorseKpi):
         return info
 
 
+class BoolTrueKpi(Kpi):
+    '''
+    Evaluator for bool.
+    '''
+
+    def __init__(self, name, actived=False):
+        super(BoolTrueKpi, self).__init__(
+            name, actived=actived, out_file='%s_factor.txt' % name)
+        self.records = {}
+
+    def add_record(self, key, rcd):
+        '''
+        rcd(bool)
+        '''
+        assert type(rcd) is bool
+        self.records[key] = rcd
+
+    def evaluate(self, root):
+        '''
+        All the tested should be True, or it will return False.
+
+        Returns: bool
+        '''
+        self.root = root
+
+        records = self._load_records(pjoin(root, self.out_file))
+        return records.all()
+
+    @staticmethod
+    def compare_with(cur, other):
+        '''
+        Inputs:
+            cur(list of bool): current data
+            other(list of bool): other's data
+        Returns:
+            float
+
+        Just return zero, because bool kpi cannot be compared.
+        '''
+        return 0.
+
+    @staticmethod
+    def cal_kpi(data):
+        '''
+        Inputs:
+            data(list of bool)
+        Returns:
+            float
+
+        True treats as 1, False treats as 0.
+
+        Returns: average of the sum.
+        '''
+        return np.average(data)
+
+    def _load_records(self, path):
+        '''
+        Loads records from a file.
+
+        The data format is
+
+        <key>\t<true/false>
+
+        For example:
+
+        test1\ttrue
+        '''
+        res = []
+        with open(path) as f:
+            for line in f:
+                key, rcd = line.strip().split('\t')
+                assert rcd == 'true' or rcd == 'false'
+                res.append(rcd == 'true')
+        return np.array(res)
+
+    @property
+    def cur_data(self):
+        '''
+        Get current data.
+        '''
+        return self._load_records(self.out_file)
+
+    @property
+    def baseline_data(self):
+        '''
+        Get history data.
+        '''
+        return self._load_records(self.his_file)
+
+    def persist(self):
+        assert self.records
+        with open(self.out_file, 'w') as f:
+            for key, rcd in self.records.items():
+                f.write("%s\t%s\n" % (key, 'true' if rcd else 'false'))
+
+
 CostKpi = GreaterWorseKpi
 
 DurationKpi = GreaterWorseKpi
@@ -248,3 +345,41 @@ def load_records_from(file):
 
 Kpi.__register__(GreaterWorseKpi)
 Kpi.__register__(LessWorseKpi)
+Kpi.__register__(BoolTrueKpi)
+
+if __name__ == '__main__':
+    import unittest
+
+    class TestBoolTrueKpi(unittest.TestCase):
+        def setUp(self):
+            self.kpi = BoolTrueKpi('bool-test')
+            self.kpi.add_record('test0', True)
+            self.kpi.add_record('test1', False)
+            self.kpi.add_record('test2', True)
+
+            # prepare baseline
+            try:
+                os.mkdir('latest_kpis')
+            except:
+                pass
+
+            tmp_kpi = BoolTrueKpi('latest_kpis/bool-test')
+            tmp_kpi.add_record('test0', False)
+            tmp_kpi.add_record('test1', True)
+            tmp_kpi.add_record('test2', False)
+            tmp_kpi.persist()
+
+        def test_persist(self):
+            self.kpi.persist()
+            self.assertTrue(os.path.exists('./bool-test_factor.txt'))
+
+        def test_evaluate(self):
+            self.kpi.persist()
+            self.assertFalse(self.kpi.evaluate('.'))
+
+        def test_compare(self):
+            self.assertEqual(
+                BoolTrueKpi.compare_with(self.kpi.cur_data,
+                                         self.kpi.baseline_data), 0)
+
+    unittest.main()
