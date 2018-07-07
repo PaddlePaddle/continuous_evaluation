@@ -2,7 +2,7 @@ from __future__ import division
 import json
 import numpy as np
 import logging
-from config import pjoin
+from _config import pjoin
 
 
 class TestError(Exception):

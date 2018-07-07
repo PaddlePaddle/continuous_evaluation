@@ -5,7 +5,7 @@ from flask.ext.cache import Cache
 sys.path.append('..')
 from db import MongoDB
 from datetime import datetime, timedelta
-import config
+import _config
 import json
 import pprint
 from kpi import Kpi
@@ -22,7 +22,7 @@ app = Flask(
 cache = Cache(
     app, config={'CACHE_TYPE': 'filesystem',
                  'CACHE_DIR': './_cache'})
-db = MongoDB(config.db_name)
+db = MongoDB(_config.db_name)
 
 
 @app.route('/')

@@ -26,11 +26,12 @@ class log:
         log.logger().debug(' '.join([str(s) for s in args]))
 
 
-class PathRecover(object):
-    ''' will jump back to the original path. '''
-    def __enter__(self):
-        self.pre_path = $(pwd).strip()
+class dictobj(dict):
+    def __setattr__(self, key, value):
+        self[key] = value
 
-    def __exit__(self, type, value, trace):
-        if $(pwd).strip() != self.pre_path:
-            cd @(self.pre_path)
+    def __getattr__(self, item):
+        if item in self:
+            return self[item]
+        else:
+            raise AttributeError("No such attribute: %s" % item)

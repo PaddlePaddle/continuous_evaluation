@@ -2,10 +2,10 @@
 Use a mongodb to persist the status of this framework.
 '''
 from db import MongoDB
-import config
+import _config
 import json
 
-db = MongoDB(config.db_name, host=config.db_host, port=config.db_port)
+db = MongoDB(_config.db_name, host=_config.db_host, port=_config.db_port)
 
 
 def add_evaluation_record(commitid, date, task, passed, infos, kpis, kpi_types,
@@ -22,7 +22,7 @@ def add_evaluation_record(commitid, date, task, passed, infos, kpis, kpi_types,
     kpi_objs: objects of KPI.
     '''
     # delete old task record for this commit
-    db.remove(config.table_name, {
+    db.remove(_config.table_name, {
         'commitid': commitid,
         'type': 'kpi',
         'task': task,
@@ -44,4 +44,4 @@ def add_evaluation_record(commitid, date, task, passed, infos, kpis, kpi_types,
         'kpi-unit-reprs': [kpi.unit_repr for kpi in kpi_objs],
         'kpi-descs': [kpi.desc for kpi in kpi_objs],
     }
-    db.insert_one(config.table_name, record)
+    db.insert_one(_config.table_name, record)
