@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import _config
 import json
 import pprint
-from kpi import Kpi
+from __kpi import Kpi
 from view import *
 from api import *
 import pyecharts

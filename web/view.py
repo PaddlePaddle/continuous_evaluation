@@ -8,7 +8,7 @@ from api import *
 from pypage import *
 from pypage import layout as lyt
 from datetime import datetime, timedelta
-from kpi import Kpi
+from __kpi import Kpi
 from persistence import db
 
 status_page = Page(

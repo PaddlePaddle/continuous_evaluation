@@ -33,17 +33,22 @@ class MongoDB(object):
         value['date'] = datetime.datetime.utcnow()
         return self.table(table).insert_one(value)
 
-    def get(self, key, table=None):
+    def get(self, key, table=None, sort=None):
         '''
         Get a record according to key or a dict.
         :param key: str or dict
+        :param sort: dict, such as {'date': 1} oldest to newest, {'date':-1} newest to oldest.
         :return: dict or None
         '''
         search_key = {'key': key} if type(key) is str else key
-        record = self.table(table).find_one(search_key)
+        if sort:
+            record = self.gets(key, table=table, sort=sort, limits=1)
+            record = record[0] if record else None
+        else:
+            record = self.table(table).find_one(search_key)
         return dictobj(record) if record else None
 
-    def gets(self, key, table=None):
+    def gets(self, key, table=None, sort=None, limits=None):
         '''
         Search multiply record one time.
         :param key: str or dict
@@ -51,12 +56,22 @@ class MongoDB(object):
         :return: list of dict
         '''
         search_key = {'key': key} if type(key) is str else key
-        record = self.table(table).find(search_key)
+        if sort:
+            if limits:
+                record = self.table(table).find(search_key).sort(sort).limit(
+                    limits)
+            else:
+                record = self.table(table).find(search_key).sort(sort)
+        else:
+            if limits:
+                record = self.table(table).find(search_key).limit(limits)
+            else:
+                record = self.table(table).find(search_key)
         return [dictobj(r) for r in record]
 
     def delete(self, key, table=None):
         search_key = {'key': key} if type(key) is str else key
-        return self.table(table).remove(search_key)
+        return self.table(table).delete_many(search_key)
 
 
 class RedisDB(object):

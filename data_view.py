@@ -5,6 +5,7 @@ Defines all the data structures in Python, it will make the database data operat
 import json
 from utils import dictobj, log
 from config_util import Config
+import pymongo
 from db import MongoDB
 
 shared_db = None
@@ -174,7 +175,16 @@ class Kpi:
     KPI data view.
     '''
 
-    def __init__(self, commitid='', task='', name='', data=None):
+    def __init__(self,
+                 commitid='',
+                 task='',
+                 name='',
+                 unit='',
+                 short_description='',
+                 description='',
+                 value=None,
+                 actived=False,
+                 data=None):
         if data:
             self.data = dictobj(data)
         else:
@@ -184,9 +194,11 @@ class Kpi:
             # str
             self.data.name = name
             # int or bool
-            self.data.value = None
-            self.data.short_description = ''
-            self.data.description = ''
+            self.data.value = value
+            self.data.unit = unit
+            self.data.short_description = short_description
+            self.data.description = description
+            self.actived = actived
 
     def set_value(self, val):
         '''
@@ -225,3 +237,33 @@ class Kpi:
         assert tasks
         assert kpi
         return "<kpi>/%s/%s/%s" % (commitid, tasks, kpi)
+
+
+class KpiBaseline:
+    @staticmethod
+    def update(task, kpi, value, comment=''):
+        '''
+        Update the KPI.
+        :param task: str
+        :param kpi: str
+        :param value: any type
+        :param comment: str
+        :return: any type
+        '''
+        key = '%s/%s' % (task, kpi)
+        value = json.dumps({'kpi': value})
+        return shared_db.set(key, value, table='baseline')
+
+    @staticmethod
+    def get(task, kpi):
+        '''
+        Get latest record.
+        :param task: str
+        :param kpi: str
+        :return: kpi.
+        '''
+        key = '%s/%s' % (task, kpi)
+        res = shared_db.get(key,
+                            table='baseline',
+                            sort=[('_id', pymongo.DESCENDING)])
+        return parse_mongo_record(res)['kpi']

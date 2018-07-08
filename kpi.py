@@ -1,12 +1,8 @@
 from __future__ import division
 import json
-import numpy as np
-import logging
-from _config import pjoin
-
-
-class TestError(Exception):
-    pass
+import numpy
+import data_view as dv
+import os
 
 
 class Kpi(object):
@@ -18,8 +14,10 @@ class Kpi(object):
                  out_file=None,
                  his_file=None,
                  actived=False,
-                 unit_repr=None):
-        ''' Interface for Kpi tracker.  
+                 unit_repr='',
+                 short_description='',
+                 description=''):
+        ''' Interface for Kpi tracker.
         actived: whether this test is turn on
             The test will yield error if failed only if it is actived.
         unit_repr: the unit of the KPI, for train_duration, ms for example.
@@ -31,6 +29,11 @@ class Kpi(object):
         self.actived = actived
         self.unit_repr = unit_repr
         self.records = []
+        self.short_description = short_description
+        self.description = description
+
+        # calculated kpis
+        self._kpi = None
 
     def add_record(self, rcd):
         self.records.append(rcd)
@@ -41,7 +44,20 @@ class Kpi(object):
 
     def persist(self):
         ''' Persist the evalution result in some way. '''
-        raise NotImplementedError
+        commitid = os.environ.get('commitid', None)
+        task = os.environ.get('task', None)
+        assert commitid
+        assert task
+        assert self._kpi
+        kpi = dv.Kpi(
+            commitid=commitid,
+            task=task,
+            name=self.name,
+            value=self._kpi,
+            unit=self.unit_repr,
+            short_description=self.short_description,
+            description=self.description, )
+        kpi.persist()
 
     @staticmethod
     def compare_with(cur, other):
@@ -75,176 +91,15 @@ class Kpi(object):
         assert issubclass(factor, Kpi)
         key = factor.__name__
         assert Kpi.dic.setdefault(key, factor) is factor, \
-              "duplicate register %s with a different class" % key
+            "duplicate register %s with a different class" % key
         Kpi.dic[key] = factor
 
 
-class GreaterWorseKpi(Kpi):
-    ''' Evaluator for any factors that large value is bad, trainning cost for example. '''
-
-    def __init__(self,
-                 name,
-                 diff_thre,
-                 skip_head=2,
-                 actived=False,
-                 unit_repr=None,
-                 desc=None):
-        '''
-        diff_thre: difference threshold.
-        '''
-        super(GreaterWorseKpi, self).__init__(
-            name,
-            out_file='%s_factor.txt' % name,
-            actived=actived,
-            unit_repr=unit_repr,
-            desc=desc)
-        self.skip_head = skip_head
-        self.diff_thre = diff_thre
-
-    def evaluate(self, root):
-        '''
-        It seems that compare every batch is too sensitive. So we just compare KPI.
-        '''
-        self.root = root
-        cur_data = load_records_from(pjoin(root, self.out_file))[
-            self.skip_head:]
-        his_data = load_records_from(pjoin(root, self.his_file))[
-            self.skip_head:]
-
-        self.ratio = self.compare_with(cur_data, his_data)
-        return (-self.ratio) < self.diff_thre
-
-    @staticmethod
-    def compare_with(cur, other):
-        cur_kpi = GreaterWorseKpi.cal_kpi(cur)
-        other_kpi = GreaterWorseKpi.cal_kpi(other)
-        return (other_kpi - cur_kpi) / other_kpi
-
-    @property
-    def cur_data(self):
-        return load_records_from(pjoin(self.root, self.out_file))
-
-    @property
-    def baseline_data(self):
-        return load_records_from(pjoin(self.root, self.his_file))
-
-    def persist(self):
-        lines = []
-        is_iterable = False
-        if self.records:
-            try:
-                is_iterable = iter(self.records[0]) is not None
-            except Exception as e:
-                pass
-        for rcd in self.records:
-            if not is_iterable: rcd = [rcd]
-            rcd = np.array(rcd)
-            rcd = rcd.tolist()
-            lines.append(json.dumps(rcd))
-
-        # empty records still needs to create an empty file.
-        with open(self.out_file, 'w') as f:
-            f.write('\n'.join(lines))
-
-    @property
-    def fail_info(self):
-        info = "[{name}] failed, diff ratio: {ratio} larger than {thre}.".format(
-            name=self.name, ratio=-self.ratio, thre=self.diff_thre)
-        if not self.actived:
-            info = "Task is disabled, " + info
-        return info
-
-    @property
-    def success_info(self):
-        info = "[{name}] pass".format(name=self.name)
-        if not self.actived:
-            info = "Task is disabled, " + info
-        return info
-
-
-class LessWorseKpi(GreaterWorseKpi):
-    ''' Evaluator for any factors that less value is bad, trainning acc for example. '''
-
-    def __init__(self,
-                 name,
-                 diff_thre,
-                 skip_head=2,
-                 actived=False,
-                 unit_repr=None,
-                 desc=None):
-        '''
-        diff_thre: difference threshold.
-        '''
-        super(LessWorseKpi, self).__init__(
-            name,
-            diff_thre,
-            skip_head,
-            actived=actived,
-            unit_repr=unit_repr,
-            desc=desc)
-        self.skip_head = skip_head
-        self.diff_thre = diff_thre
-
-    def evaluate(self, root):
-        self.root = root
-        cur_data = load_records_from(pjoin(root, self.out_file))[
-            self.skip_head:]
-        his_data = load_records_from(pjoin(root, self.his_file))[
-            self.skip_head:]
-        self.ratio = self.compare_with(cur_data, his_data)
-        return (-self.ratio) < self.diff_thre
-
-    @staticmethod
-    def compare_with(cur, other):
-        cur_kpi = LessWorseKpi.cal_kpi(cur)
-        other_kpi = LessWorseKpi.cal_kpi(other)
-        return (cur_kpi - other_kpi) / other_kpi
-
-    @property
-    def cur_data(self):
-        return load_records_from(pjoin(self.root, self.out_file))
-
-    @property
-    def baseline_data(self):
-        return load_records_from(pjoin(self.root, self.his_file))
-
-    @property
-    def fail_info(self):
-        info = "[{name}] failed, diff ratio: {ratio} larger than {thre}.".format(
-            name=self.name, ratio=-self.ratio, thre=self.diff_thre)
-        if not self.actived:
-            info = "Task is disabled, " + info
-        return info
-
-    @property
-    def success_info(self):
-        info = "[{name}] pass".format(name=self.name)
-        if not self.actived:
-            info = "Task is disabled, " + info
-        return info
-
-
-CostKpi = GreaterWorseKpi
-
-DurationKpi = GreaterWorseKpi
-
-AccKpi = LessWorseKpi
-
-
-def load_records_from(file):
+def get_baseline_kpi(task, kpi):
     '''
-    each line of the data format is
-        <json of record>
-    for example, a real record might be:
-        [[0.1, 0.3], [0.4, 0.2]]
+    Get the baseline record, the record might be a scalar or a data structure.
+    :param task: str
+    :param kpi: str
+    :return: scalar or data structure.
     '''
-    datas = []
-    with open(file) as f:
-        for line in f.readlines():
-            data = json.loads(line.strip())
-            datas.append(np.array(data))
-    return np.array(datas)
-
-
-Kpi.__register__(GreaterWorseKpi)
-Kpi.__register__(LessWorseKpi)
+    dv.shared_db.get()

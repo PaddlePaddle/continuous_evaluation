@@ -107,5 +107,26 @@ class CommitTester(unittest.TestCase):
         dv.shared_db.client.drop_database('test')
 
 
+class KpiBaselineTester(unittest.TestCase):
+    def test_update(self):
+        dv.init_shared_db(True)
+        dv.KpiBaseline.update('task0', 'kpi0', 1., 'first update')
+
+    def test_get(self):
+        dv.init_shared_db(True)
+        dv.KpiBaseline.update('task0', 'kpi0', 1., 'first update')
+        dv.KpiBaseline.update('task0', 'kpi0', 2., 'first update')
+        dv.KpiBaseline.update('task0', 'kpi0', 3., 'first update')
+        dv.KpiBaseline.update('task0', 'kpi1', True, 'first update')
+
+        rcd = dv.KpiBaseline.get('task0', 'kpi0')
+        log.info('baseline record', rcd)
+        self.assertEqual(rcd, 3.)
+        self.assertEqual(dv.KpiBaseline.get('task0', 'kpi1'), True)
+
+    def tearDown(self):
+        dv.shared_db.client.drop_database('test')
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -11,7 +11,7 @@ import _config
 import json
 from db import MongoDB
 from datetime import datetime, timedelta
-from kpi import Kpi
+from __kpi import Kpi
 
 db = MongoDB(_config.db_name)
 

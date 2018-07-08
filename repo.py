@@ -1,3 +1,6 @@
+from utils import local, __
+
+
 def clone(repo_url, local_path):
     '''
     Git clone a repo to a local path.
@@ -5,3 +8,6 @@ def clone(repo_url, local_path):
     :param local_path: str
     :return: None
     '''
+    __('git clone {url} {local}'.format(
+        url=repo_url,
+        local=local_path, ))
