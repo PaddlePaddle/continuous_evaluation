@@ -266,4 +266,4 @@ class KpiBaseline:
         res = shared_db.get(key,
                             table='baseline',
                             sort=[('_id', pymongo.DESCENDING)])
-        return parse_mongo_record(res)['kpi']
+        return parse_mongo_record(res)['kpi'] if res else None

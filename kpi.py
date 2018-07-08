@@ -1,7 +1,7 @@
 from __future__ import division
-import json
-import numpy
+import numpy as np
 import data_view as dv
+from utils import log
 import os
 
 
@@ -10,9 +10,6 @@ class Kpi(object):
 
     def __init__(self,
                  name,
-                 desc='',
-                 out_file=None,
-                 his_file=None,
                  actived=False,
                  unit_repr='',
                  short_description='',
@@ -23,9 +20,6 @@ class Kpi(object):
         unit_repr: the unit of the KPI, for train_duration, ms for example.
         desc: the description of this task. '''
         self.name = name
-        self.desc = desc
-        self.out_file = out_file
-        self.his_file = "latest_kpis/" + out_file if his_file is None else his_file
         self.actived = actived
         self.unit_repr = unit_repr
         self.records = []
@@ -69,19 +63,20 @@ class Kpi(object):
         '''
         raise NotImplementedError
 
-    @staticmethod
-    def cal_kpi(data):
+    def cal_kpi(self):
         ''' calculate the KPI(a scalar) based on `self.cur_data`.
         This is just a default implementation, free to customize.  '''
-        return np.average(data)
+        return np.average(self.records)
 
     @property
     def cur_data(self):
-        raise NotImplementedError
+        self._kpi = self.cal_kpi()
+        return self._kpi
 
     @property
     def baseline_data(self):
-        raise NotImplementedError
+        task = os.environ.get('task')
+        return dv.KpiBaseline.get(task, self.name)
 
     @staticmethod
     def __register__(factor):
@@ -95,11 +90,63 @@ class Kpi(object):
         Kpi.dic[key] = factor
 
 
-def get_baseline_kpi(task, kpi):
-    '''
-    Get the baseline record, the record might be a scalar or a data structure.
-    :param task: str
-    :param kpi: str
-    :return: scalar or data structure.
-    '''
-    dv.shared_db.get()
+class GreaterWorseKpi(Kpi):
+    def __init__(self,
+                 name,
+                 actived=False,
+                 threshold=0.01,
+                 unit_repr='',
+                 short_description='',
+                 description=''):
+        super().__init__(
+            name=name,
+            actived=actived,
+            unit_repr=unit_repr,
+            short_description=short_description,
+            description=description, )
+        self.threshold = threshold
+
+    def evaluate(self):
+        if self.baseline_data is None:
+            return True
+        ratio = self.compare_with(self.cur_data, self.baseline_data)
+        return ratio < self.threshold
+
+    @staticmethod
+    def compare_with(cur, other):
+        return (cur - other) / other
+
+
+class LessWorseKpi(Kpi):
+    def __init__(self,
+                 name,
+                 actived=False,
+                 threshold=0.01,
+                 unit_repr='',
+                 short_description='',
+                 description=''):
+        super().__init__(
+            name=name,
+            actived=actived,
+            unit_repr=unit_repr,
+            short_description=short_description,
+            description=description, )
+        self.threshold = threshold
+
+    @staticmethod
+    def compare_with(cur, other):
+        return (cur - other) / other
+
+    def evaluate(self):
+        if self.baseline_data is None:
+            return True
+        ratio = self.compare_with(self.cur_data, self.baseline_data)
+        return -ratio < self.threshold
+
+
+CostKpi = GreaterWorseKpi
+DurationKpi = GreaterWorseKpi
+AccKpi = LessWorseKpi
+
+Kpi.__register__(GreaterWorseKpi)
+Kpi.__register__(LessWorseKpi)
