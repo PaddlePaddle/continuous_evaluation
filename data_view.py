@@ -3,24 +3,38 @@ Defines all the data structures in Python, it will make the database data operat
 '''
 
 import json
-from utils import dictobj
+from utils import dictobj, log
 from config_util import Config
-from db import RedisDB, escape_bstr
+from db import MongoDB
 
 shared_db = None
+
 
 def init_shared_db(test=False):
     global shared_db
     if not shared_db:
         config = Config.Global()
-        shared_db = RedisDB(host=config.get('database', 'host'),
+        shared_db = MongoDB(host=config.get('database', 'host'),
                             port=config.get_int('database', 'port'),
-                            db=config.get_int('database', 'id'),
+                            db=config.get('database', 'id'),
                             test=test)
 
 
+def parse_mongo_record(record):
+    '''
+    Combine MongoDB record infomation with the JSON serialized dict.
+    :param record: dict, which is a MongoDB record with a 'json' field.
+    :return: dictobj
+    '''
+    assert 'json' in record
+    assert 'date' in record
+    info = json.loads(record['json'])
+    info.update({'date': record['date']})
+    return dictobj(info)
+
+
 class Commit:
-    def __init__(self, commitid, date=None, tasks=[]):
+    def __init__(self, commitid, tasks=[], data=None):
         '''
         :param commitid: str
             long commit id.
@@ -28,17 +42,19 @@ class Commit:
         :param tasks: list of str
             names of tasks.
         '''
-        self.data = dictobj()
-        self.data.commitid = commitid
-        self.data.date = date
-        self.data.tasks = []
+        if data:
+            self.data = dictobj(data)
+        else:
+            self.data = dictobj()
+            self.data.commitid = commitid
+            self.data.tasks = []
 
-        self.record_id = commitid
+        self.record_id = self.gen_record_id(commitid)
 
     def persist(self):
         init_shared_db()
         message = json.dumps(self.data)
-        assert shared_db.set(self.record_id, message)
+        assert shared_db.set(self.record_id, message, table='commit')
         return self.record_id
 
     def fetch_info(self):
@@ -48,9 +64,9 @@ class Commit:
         '''
         init_shared_db()
 
-        message = shared_db.get(self.record_id)
+        message = shared_db.get(self.record_id, table='commit')
         assert message, 'no record called %s' % self.record_id
-        self.data = dictobj(json.loads(message))
+        self.data = parse_mongo_record(message)
 
     def fetch_tasks(self):
         '''
@@ -59,24 +75,82 @@ class Commit:
         assert self.data.tasks, 'fetch_info first'
         tasks = []
         for task in self.data.tasks:
-            info = shared_db.get(Task.gen_record_id(self.data.commitid, task))
+            info = shared_db.get(Task.gen_record_id(self.data.commitid, task), table='task')
             if info:
-                info = json.loads(info)
+                info = parse_mongo_record(info)
                 task = Task()
                 task.data = info
                 tasks.append(task)
         return tasks
 
+    @staticmethod
+    def gen_record_id(commitid):
+        assert commitid
+        return '<commit>/%s' % commitid
+
+    @staticmethod
+    def fetch_all():
+        init_shared_db()
+        infos = shared_db.gets({}, table='commit')
+        return [Commit(json.loads(info['value'])) for info in infos] if infos else []
+
 
 class Task:
-    def __init__(self, commit='', name=''):
-        self.data = dictobj()
-        self.data.name = name
-        self.data.commit = commit
-        # Execution environment.
-        self.data.env_desc = ''
-        # list of Kpi
-        self.data.kpis = []
+    def __init__(self, commitid='', name='', kpis=[], data=None):
+        if data:
+            self.data = dictobj(data)
+        else:
+            self.data = dictobj()
+            self.data.name = name
+            self.data.commitid = commitid
+            # Execution environment.
+            self.data.env_desc = ''
+            # list of Kpi
+            self.data.kpis = kpis
+
+    @property
+    def record_id(self):
+        assert self.data.commitid
+        assert self.data.name
+        return Task.gen_record_id(self.data.commitid, self.data.name)
+
+    def persist(self):
+        init_shared_db()
+        message = json.dumps(self.data)
+        shared_db.set(self.record_id, message, table='task')
+        return self.record_id
+
+    def fetch_info(self):
+        init_shared_db()
+        info = shared_db.get(self.record_id, table='task')
+        log.info('task info', info)
+        assert info
+        self.data = parse_mongo_record(info)
+        return self.data
+
+    def fetch_kpis(self):
+        '''
+        :return: list of KPI.
+        '''
+        init_shared_db()
+
+        assert self.data.kpis, "fetch_info first"
+        kpi_ids = [Kpi.gen_record_id(self.data.commitid, self.data.name, kpi) for kpi in self.data.kpis]
+        print('kpi_ids', kpi_ids)
+        # TODO(Superjomn) search multiple records in one time.
+        res = []
+        for kpi_id in kpi_ids:
+            record = shared_db.get(kpi_id, table='kpi')
+            if record:
+                kpi = Kpi(data=dictobj(json.loads(record['json'])))
+                res.append(kpi)
+        return res
+
+    @staticmethod
+    def fetch_all():
+        init_shared_db()
+        infos = shared_db.gets({}, table="task")
+        return [Task(json.loads(info['json'])) for info in infos] if infos else []
 
     @staticmethod
     def gen_record_id(commitid, task):
@@ -85,43 +159,17 @@ class Task:
         :param task: str
         :return: str
         '''
-        return "%s/%s" % (commitid, task)
+        return "<task>/%s/%s" % (commitid, task)
 
-    @property
-    def record_id(self):
-        assert self.commit
-        assert self.name
-        return Task.gen_record_id(self.data.commitid, self.data.name)
-
-    def persist(self):
-        init_shared_db()
-        message = json.dumps(self.data)
-        shared_db.set(self.record_id, message)
-        return self.record_id
-
-    def fetch_kpis(self):
-        '''
-        :return: list of KPI.
-        '''
-        assert self.data.kpis
-        init_shared_db()
-        kpis = []
-        for kpi in self.data.kpis:
-            info = shared_db.get(kpi)
-            if info:
-                data = json.loads(info)
-                kpi = Kpi()
-                kpi.data = data
-                kpis.append(kpi)
-        return kpis
 
 class Kpi:
     '''
     KPI data view.
     '''
+
     def __init__(self, commitid='', task='', name='', data=None):
         if data:
-            self.data = data
+            self.data = dictobj(data)
         else:
             self.data = dictobj()
             self.data.commitid = commitid
@@ -142,17 +190,16 @@ class Kpi:
         self.data.value = val
 
     def fetch_infos(self):
-        record = shared_db.get(self.record_id)
-        if record:
-            record = escape_bstr(record)
-            return json.loads(record)
+        data = shared_db.get(self.record_id, table='kpi')
+        assert data, 'no KPI record which key is %s' % self.record_id
+
+        self.data = json.loads(data['json'])
+        return self.data
 
     @staticmethod
-    def gen_record_id(commitid, tasks, kpi):
-        assert commitid
-        assert tasks
-        assert kpi
-        return "%s/%s/%s" % (commitid, tasks, kpi)
+    def fetch_all():
+        infos = shared_db.gets({}, table="kpi")
+        return [Kpi(info['json']) for info in infos] if infos else []
 
     @property
     def record_id(self):
@@ -161,6 +208,12 @@ class Kpi:
     def persist(self):
         init_shared_db()
         message = json.dumps(self.data)
-        shared_db.set(self.record_id, message)
+        shared_db.set(self.record_id, message, table='kpi')
         return self.record_id
 
+    @staticmethod
+    def gen_record_id(commitid, tasks, kpi):
+        assert commitid
+        assert tasks
+        assert kpi
+        return "<kpi>/%s/%s/%s" % (commitid, tasks, kpi)

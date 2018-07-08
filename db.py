@@ -1,7 +1,61 @@
 import bson
 from pymongo import MongoClient
 import redis
-from utils import log
+from utils import log, dictobj
+import datetime
+
+class MongoDB(object):
+    '''
+    MongoDB can store data that is larger than memory, so it is more sutable for CE
+    than Redis.
+    '''
+
+    def __init__(self, host='localhost', port=27017, db="0", test=False):
+        if test:
+            log.warn('Using MongoDB in test mode')
+        db = "test" if test else db
+        self.test = test
+        self.client = MongoClient(host, port)
+        self.db = getattr(self.client, db)
+
+    def tables(self):
+        return self.db.collection_names(include_system_collections=False)
+
+    def table(self, table=None):
+        return self.db.posts if not table else getattr(self.db, table)
+
+    def set(self, key, value, table=None):
+        if type(value) is str:
+            value = {'json': value}
+        cond = {'key': key} if type(key) is str else key
+        value.update(cond)
+        value['date'] = datetime.datetime.utcnow()
+        return self.table(table).insert_one(value)
+
+    def get(self, key, table=None):
+        '''
+        Get a record according to key or a dict.
+        :param key: str or dict
+        :return: dict or None
+        '''
+        search_key = {'key':key} if type(key) is str else key
+        record = self.table(table).find_one(search_key)
+        return dictobj(record) if record else None
+
+    def gets(self, key, table=None):
+        '''
+        Search multiply record one time.
+        :param key: str or dict
+        :param table:
+        :return: list of dict
+        '''
+        search_key = {'key':key} if type(key) is str else key
+        record = self.table(table).find(search_key)
+        return [dictobj(r) for r in record]
+
+    def delete(self, key, table=None):
+        search_key = {'key':key} if type(key) is str else key
+        return self.table(table).remove(search_key)
 
 
 class RedisDB(object):
@@ -10,7 +64,7 @@ class RedisDB(object):
     def __init__(self, host='localhost', port=6379, db=0, test=False):
         db = 15 if test else db
         self.test = test
-        self.rd = redis.StrictRedis(host=host, port=port, db=db)
+        self.rd = redis.StrictRedis(host=host, port=port, db=db, encoding="utf-8", decode_responses=True)
         log.warn('Connect DB in %s:%d, id: %d' % (host, port, db))
         if test:
             log.warn('Run DB in testing mode.')
@@ -59,71 +113,5 @@ class RedisDB(object):
         '''
         return self.rd.pubsub()
 
-def escape_bstr(s, code='ascii'):
-    '''
-    Escape binary string.
-    :param s(binary string)
-    :return: str
-    '''
-    return s.decode(code)
-
-class MongoDB(object):
-    def __init__(self, dbname, host='localhost', port=27017):
-        log.warn('The MongoDB interface is deprecated. The current DB is Redis.')
-        self.client = MongoClient(host, port)
-        self.db = getattr(self.client, dbname)
-
-    def table(self, table):
-        ''' table might be a string or a Mongo table object. '''
-        if isinstance(table, str):
-            table = getattr(self.db, table)
-        return table
-
-    # def insert_one(self, table, key, json):
-    #     key['_value'] = json
-    #     self.table(table).insert_one(key)
-    def insert_one(self, table, record):
-        self.table(table).insert_one(record)
-
-    def remove(self, table, cond):
-        self.table(table).remove(cond)
-
-    def find_one(self, table, cond):
-        '''
-        Find one record.
-
-        cond: dic
-           something like {'author': 'Mike'}
-        '''
-        return self.table(table).find_one(cond)
-
-    def find_sections(self, table, cond, sections, key):
-
-        return self.table(table).find(cond, sections).sort(key)
-
-    def find(self, table, cond):
-        '''
-        Find records.
-
-        cond: dic
-           something like {'author': 'Mike'}
-        '''
-        return self.table(table).find(cond)
-
-    def finds(self, table, cond):
-        '''
-        Find records.
-
-        cond: dic
-           something like {'author': 'Mike'}
-        '''
-        return [r for r in self.table(table).find(cond)]
 
 
-if __name__ == '__main__':
-    import _config
-    from pprint import pprint
-
-    db = MongoDB(_config.db_name)
-    records = db.finds(_config.table_name, {'type': 'kpi'})
-    pprint(records)
