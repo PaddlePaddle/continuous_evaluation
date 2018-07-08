@@ -1,4 +1,5 @@
 import logging
+from plumbum import local
 
 
 class log:
@@ -35,3 +36,8 @@ class dictobj(dict):
             return self[item]
         else:
             raise AttributeError("No such attribute: %s" % item)
+
+
+def __(cmd):
+    cmd = cmd.split()
+    return local[cmd[0]](*cmd[1:]).strip()
