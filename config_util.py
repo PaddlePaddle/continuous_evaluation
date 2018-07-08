@@ -3,6 +3,7 @@ import configparser
 
 config_path = './default.conf'
 
+
 class Config(object):
     def __init__(self, path):
         log.warn('Loading config from %s' % path)
@@ -24,6 +25,3 @@ class Config(object):
     @staticmethod
     def Global(path=config_path):
         return Config(path)
-
-
-

@@ -20,7 +20,9 @@ compare_page = Page(
     "Continuous Evaluation", filename="pypage-search.html").enable_bootstrap()
 
 dist_page = Page(
-    "Distributation", filename="pypage-search.html").enable_bootstrap().enable_echarts()
+    "Distributation",
+    filename="pypage-search.html").enable_bootstrap().enable_echarts()
+
 
 def build_index_page():
     page = Page('Continous Evaluation', debug=True).enable_bootstrap()
@@ -83,6 +85,7 @@ def build_compare_page():
         commit_compare_select_snip,
         commit_compare_result_snip, )
 
+
 def build_scalar_page(task_name):
     page = Page('KPI Distribution').enable_bootstrap().enable_echarts()
 
@@ -94,9 +97,8 @@ def build_scalar_page(task_name):
         with main_container:
             scalar_snip.html
 
-    return page.compile_str(), (
-        scalar_snip,
-    )
+    return page.compile_str(), (scalar_snip, )
+
 
 def create_middle_align_box():
     with lyt.fluid_container():
@@ -147,7 +149,9 @@ class CommitDetailSnip(Snippet):
             Tag('h2', 'Tasks').as_row()
             with FOR('name,task in version.kpis.items()'):
                 Tag('h4', VAL('name')).as_row()
-                Tag('span', '<a href="/commit/draw_scalar?task=%s">show scalars</a>' % VAL('name')).as_row()
+                Tag('span',
+                    '<a href="/commit/draw_scalar?task=%s">show scalars</a>' %
+                    VAL('name')).as_row()
                 with lyt.row():
                     with table().set_striped():
                         RawHtml('<thead class="thead-dark"><tr>')
@@ -330,6 +334,7 @@ class ScalarSnip(Snippet):
 
     One page for each task.
     '''
+
     def __init__(self, N, task_name):
         super().__init__()
         self.N = N
@@ -354,15 +359,17 @@ class ScalarSnip(Snippet):
         for commit in last_N_commit:
             rcd = CommitRecord.get_tasks(commit.commit)
             if self.task_name not in rcd: continue
-            for (kpi,val) in rcd[self.task_name].kpis.items():
-                kpis.setdefault(kpi+'--x', []).append(commit.shortcommit)
+            for (kpi, val) in rcd[self.task_name].kpis.items():
+                kpis.setdefault(kpi + '--x', []).append(commit.shortcommit)
                 kpis.setdefault(kpi, []).append(float(val[2]))
         res = []
         for (kpi, vals) in kpis.items():
             print(kpi, vals)
             if not kpi.endswith('--x'):
-                dist, js_deps = scalar(kpi, kpis[kpi+'--x'], kpis[kpi])
-                res.append((kpi, dist,))
+                dist, js_deps = scalar(kpi, kpis[kpi + '--x'], kpis[kpi])
+                res.append((
+                    kpi,
+                    dist, ))
 
         return {self.KEY('kpis'): res, 'script_list': js_deps}
 
@@ -381,7 +388,6 @@ class objdict(dict):
         except:
             print('valid keys:', [k for k in self.keys()])
             exit(1)
-
 
 
 def tasks_success(tasks):

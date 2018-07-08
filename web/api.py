@@ -37,13 +37,14 @@ class CommitRecord:
         returns: list of CommitRecord
         '''
         # sort by 'date' in ascending order
-        commits = db.find_sections(_config.table_name,
-                                   {'type': 'kpi'}, {'commitid': 1, "_id": 0}, "date")
+        commits = db.find_sections(_config.table_name, {'type': 'kpi'},
+                                   {'commitid': 1,
+                                    "_id": 0}, "date")
         commit_ids = []
         for commit in commits:
             if commit['commitid'] not in commit_ids:
                 commit_ids.append(commit['commitid'])
-        
+
         records = []
         for commit in commit_ids:
             commitobj = CommitRecord(commit)
@@ -65,7 +66,7 @@ class CommitRecord:
                      values: TaskRecord '''
         record = CommitRecord(commit)
         tasks = record.__get_db_record()
-        print (tasks)
+        print(tasks)
         res = objdict()
         for task in tasks:
             taskobj = TaskRecord(commit, task['task'], task['infos'],
@@ -109,6 +110,7 @@ class TaskRecord(objdict):
         return db.find_one(_config.table_name, {'type': 'kpi', \
                           'commitid': self.commitid, 'task': self.name})
 
+
 class KpiRecord:
     def __init__(self, name):
         self.name = name
@@ -125,10 +127,12 @@ class KpiRecord:
         for i in range(len(task_info['kpis-keys'])):
             if self.name == task_info['kpis-keys'][i]:
                 break
+
         def safe_get_fields(field):
             if field in task_info:
                 return task_info[field]
             return None
+
         #To keep the kpi datas in order, we should process the data one by one.
         kpi_vals = json.loads(task_info['kpis-values'])
         self.values = kpi_vals[i]
@@ -136,14 +140,14 @@ class KpiRecord:
         self.avg = '%.4f' % Kpi.dic.get(self.type).cal_kpi(data=kpi_vals[i])
         infos = parse_infos(task_info['infos'])
         self.info = infos[self.name]
-        
+
         activeds = safe_get_fields('kpi-activeds')
         self.activeds = activeds[i] if activeds else True
 
         unit_reprs = safe_get_fields('kpi-unit-reprs')
-        self.unit =  "(%s)" % unit_reprs[i] if unit_reprs else ""   
+        self.unit = "(%s)" % unit_reprs[i] if unit_reprs else ""
 
-        descs = safe_get_fields('kpi-descs')        
+        descs = safe_get_fields('kpi-descs')
         self.desc = descs[i] if descs else ""
 
         return (self.values, self.type, self.avg, self.info, self.activeds,

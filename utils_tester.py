@@ -1,6 +1,7 @@
 from utils import *
 import unittest
 
+
 class LogTester(unittest.TestCase):
     def test_info(self):
         log.info("haha")
@@ -10,6 +11,7 @@ class LogTester(unittest.TestCase):
 
     def test_warn(self):
         log.warn("haha")
+
 
 class dictobject_tester(unittest.TestCase):
     def test(self):

@@ -7,6 +7,7 @@ analysis the benchmark model kpi
 import numpy as np
 from utils import log
 
+
 class AnalysisKpiData(object):
     """
     Analysis_kpi_data
@@ -51,15 +52,16 @@ class AnalysisKpiData(object):
             is_actived = self.kpis_status[kpi_name]
             log.info('kpi: %s, actived: %s' % (kpi_name, is_actived))
             if is_actived:
-                if self.analysis_result[kpi_name]['change_rate'] > self.diff_thre:
+                if self.analysis_result[kpi_name][
+                        'change_rate'] > self.diff_thre:
                     suc = False
                     log.warn("NOTE kpi: %s change_rate too bigger!" % kpi_name)
             log.info('min:%s max:%s mean:%s median:%s std:%s change_rate:%s' %
-                  (self.analysis_result[kpi_name]['min'],
-                   self.analysis_result[kpi_name]['max'],
-                   self.analysis_result[kpi_name]['mean'],
-                   self.analysis_result[kpi_name]['median'],
-                   self.analysis_result[kpi_name]['std'],
-                   self.analysis_result[kpi_name]['change_rate']))
+                     (self.analysis_result[kpi_name]['min'],
+                      self.analysis_result[kpi_name]['max'],
+                      self.analysis_result[kpi_name]['mean'],
+                      self.analysis_result[kpi_name]['median'],
+                      self.analysis_result[kpi_name]['std'],
+                      self.analysis_result[kpi_name]['change_rate']))
         if not suc:
             raise Exception("some kpi's change_rate has bigger then thre")

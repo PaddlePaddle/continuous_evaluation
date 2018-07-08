@@ -4,6 +4,7 @@ import redis
 from utils import log, dictobj
 import datetime
 
+
 class MongoDB(object):
     '''
     MongoDB can store data that is larger than memory, so it is more sutable for CE
@@ -38,7 +39,7 @@ class MongoDB(object):
         :param key: str or dict
         :return: dict or None
         '''
-        search_key = {'key':key} if type(key) is str else key
+        search_key = {'key': key} if type(key) is str else key
         record = self.table(table).find_one(search_key)
         return dictobj(record) if record else None
 
@@ -49,12 +50,12 @@ class MongoDB(object):
         :param table:
         :return: list of dict
         '''
-        search_key = {'key':key} if type(key) is str else key
+        search_key = {'key': key} if type(key) is str else key
         record = self.table(table).find(search_key)
         return [dictobj(r) for r in record]
 
     def delete(self, key, table=None):
-        search_key = {'key':key} if type(key) is str else key
+        search_key = {'key': key} if type(key) is str else key
         return self.table(table).remove(search_key)
 
 
@@ -64,7 +65,12 @@ class RedisDB(object):
     def __init__(self, host='localhost', port=6379, db=0, test=False):
         db = 15 if test else db
         self.test = test
-        self.rd = redis.StrictRedis(host=host, port=port, db=db, encoding="utf-8", decode_responses=True)
+        self.rd = redis.StrictRedis(
+            host=host,
+            port=port,
+            db=db,
+            encoding="utf-8",
+            decode_responses=True)
         log.warn('Connect DB in %s:%d, id: %d' % (host, port, db))
         if test:
             log.warn('Run DB in testing mode.')
@@ -112,6 +118,3 @@ class RedisDB(object):
         Create a new publish subscribe pattern.
         '''
         return self.rd.pubsub()
-
-
-

@@ -14,10 +14,11 @@ def init_shared_db(test=False):
     global shared_db
     if not shared_db:
         config = Config.Global()
-        shared_db = MongoDB(host=config.get('database', 'host'),
-                            port=config.get_int('database', 'port'),
-                            db=config.get('database', 'id'),
-                            test=test)
+        shared_db = MongoDB(
+            host=config.get('database', 'host'),
+            port=config.get_int('database', 'port'),
+            db=config.get('database', 'id'),
+            test=test)
 
 
 def parse_mongo_record(record):
@@ -75,7 +76,8 @@ class Commit:
         assert self.data.tasks, 'fetch_info first'
         tasks = []
         for task in self.data.tasks:
-            info = shared_db.get(Task.gen_record_id(self.data.commitid, task), table='task')
+            info = shared_db.get(Task.gen_record_id(self.data.commitid, task),
+                                 table='task')
             if info:
                 info = parse_mongo_record(info)
                 task = Task()
@@ -92,7 +94,8 @@ class Commit:
     def fetch_all():
         init_shared_db()
         infos = shared_db.gets({}, table='commit')
-        return [Commit(json.loads(info['value'])) for info in infos] if infos else []
+        return [Commit(json.loads(info['value']))
+                for info in infos] if infos else []
 
 
 class Task:
@@ -135,7 +138,10 @@ class Task:
         init_shared_db()
 
         assert self.data.kpis, "fetch_info first"
-        kpi_ids = [Kpi.gen_record_id(self.data.commitid, self.data.name, kpi) for kpi in self.data.kpis]
+        kpi_ids = [
+            Kpi.gen_record_id(self.data.commitid, self.data.name, kpi)
+            for kpi in self.data.kpis
+        ]
         print('kpi_ids', kpi_ids)
         # TODO(Superjomn) search multiple records in one time.
         res = []
@@ -150,7 +156,8 @@ class Task:
     def fetch_all():
         init_shared_db()
         infos = shared_db.gets({}, table="task")
-        return [Task(json.loads(info['json'])) for info in infos] if infos else []
+        return [Task(json.loads(info['json']))
+                for info in infos] if infos else []
 
     @staticmethod
     def gen_record_id(commitid, task):
@@ -203,7 +210,8 @@ class Kpi:
 
     @property
     def record_id(self):
-        return self.gen_record_id(self.data.commitid, self.data.task, self.data.name)
+        return self.gen_record_id(self.data.commitid, self.data.task,
+                                  self.data.name)
 
     def persist(self):
         init_shared_db()

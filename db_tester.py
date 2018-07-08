@@ -1,6 +1,7 @@
 from db import RedisDB, MongoDB
 import unittest
 
+
 class MongoDBTester(unittest.TestCase):
     def setUp(self):
         self.db = MongoDB(test=True)
@@ -23,9 +24,9 @@ class MongoDBTester(unittest.TestCase):
         self.assertEqual(rcd.name, "xxx0")
 
     def test_gets(self):
-        self.db.set({'type':'book'}, dict(name='xxx0'), table='table0')
-        self.db.set({'type':'book'}, dict(name='xxx0'), table='table0')
-        rcds = self.db.gets({'type':'book'}, table='table0')
+        self.db.set({'type': 'book'}, dict(name='xxx0'), table='table0')
+        self.db.set({'type': 'book'}, dict(name='xxx0'), table='table0')
+        rcds = self.db.gets({'type': 'book'}, table='table0')
         self.assertEqual(len(rcds), 2)
 
     def test_delete(self):
@@ -40,7 +41,6 @@ class MongoDBTester(unittest.TestCase):
 
 
 class RedisDBTester(unittest.TestCase):
-
     def setUp(self):
         self.db = RedisDB(test=True)
 
@@ -69,6 +69,7 @@ class RedisDBTester(unittest.TestCase):
             message = p.get_message()
             self.assertEqual(message['type'], 'message')
             self.assertEqual(message['data'], datas[i])
+
 
 if __name__ == '__main__':
     unittest.main()

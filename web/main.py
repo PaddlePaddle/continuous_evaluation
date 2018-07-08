@@ -71,12 +71,13 @@ def commit_compare():
     logics = merge_logics(select_snip.logic(), result_snip.logic(cur, base))
     return render_template_string(page, **logics)
 
+
 #@cache.cached(timeout=120)
 @app.route('/commit/draw_scalar', methods=["GET"])
 def draw_scalar():
     task_name = request.args['task']
 
-    page, (scalar_snap,) = build_scalar_page(task_name)
+    page, (scalar_snap, ) = build_scalar_page(task_name)
     logics = merge_logics(scalar_snap.logic())
     return render_template_string(page, **logics)
 
@@ -85,10 +86,18 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='CE Web')
-    parser.add_argument('--port', type=int, default=80, required=False,
-                    help='web service port')
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=80,
+        required=False,
+        help='web service port')
 
-    parser.add_argument('--host', type=str, default='0.0.0.0', required=False,
-                    help='web service host')
+    parser.add_argument(
+        '--host',
+        type=str,
+        default='0.0.0.0',
+        required=False,
+        help='web service host')
     args = parser.parse_args()
     app.run(debug=True, host=args.host, port=args.port, threaded=True)

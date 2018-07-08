@@ -12,7 +12,9 @@ class KpiTester(unittest.TestCase):
 
         dv.shared_db = None
         dv.init_shared_db(test=True)
-        self.kpi = dv.Kpi(commitid=self.commitid, task=self.task, name=self.name)
+        self.kpi = dv.Kpi(commitid=self.commitid,
+                          task=self.task,
+                          name=self.name)
 
     def test_persist(self):
         self.kpi.set_value(1.)
@@ -22,13 +24,17 @@ class KpiTester(unittest.TestCase):
         self.kpi.set_value(1.)
         self.kpi.persist()
 
-        another_kpi = dv.Kpi(commitid=self.commitid, task=self.task, name=self.name)
+        another_kpi = dv.Kpi(commitid=self.commitid,
+                             task=self.task,
+                             name=self.name)
         info = another_kpi.fetch_infos()
         self.assertTrue(info)
         self.assertAlmostEqual(info['value'], 1.)
 
     def test_query_not_exist(self):
-        another_kpi = dv.Kpi(commitid='not-exitsts', task=self.task, name=self.name)
+        another_kpi = dv.Kpi(commitid='not-exitsts',
+                             task=self.task,
+                             name=self.name)
         exists = True
         try:
             another_kpi.fetch_infos()
@@ -50,7 +56,8 @@ class TaskTester(unittest.TestCase):
         dv.shared_db = None
         dv.init_shared_db(test=True)
         self.kpi = []
-        self.task = dv.Task(commitid=self.commitid, name=self.name, kpis=self.kpi)
+        self.task = dv.Task(
+            commitid=self.commitid, name=self.name, kpis=self.kpi)
         self.kpi_ids.add(self.task.record_id)
         for i in range(3):
             kpi_name = 'kpi' + str(i)
@@ -90,7 +97,8 @@ class CommitTester(unittest.TestCase):
         dv.shared_db = None
         dv.init_shared_db(test=True)
 
-        self.commit = dv.Commit(commitid=self.commitid, tasks=['task0', 'task1'])
+        self.commit = dv.Commit(
+            commitid=self.commitid, tasks=['task0', 'task1'])
 
     def test_persist(self):
         self.commit.persist()
