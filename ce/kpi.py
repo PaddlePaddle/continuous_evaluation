@@ -1,7 +1,6 @@
 from __future__ import division
 import numpy as np
-import data_view as dv
-from utils import log
+import ce.data_view as dv
 import os
 
 

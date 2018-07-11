@@ -1,10 +1,10 @@
-from utils import dictobj, log
+from ce.utils import log
 import configparser
-
-config_path = './default.conf'
 
 
 class Config(object):
+    g_config = None
+
     def __init__(self, path):
         log.warn('Loading config from %s' % path)
         self.config = configparser.ConfigParser()
@@ -23,5 +23,8 @@ class Config(object):
         return self.config.getboolean(session, key)
 
     @staticmethod
-    def Global(path=config_path):
-        return Config(path)
+    def Global(path=None):
+        if not Config.g_config:
+            assert path
+            Config.g_config = Config(path)
+        return Config.g_config

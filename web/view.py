@@ -1,15 +1,10 @@
 import sys
 sys.path.append('pypage')
 sys.path.append('..')
-import _config
-import json
-from db import MongoDB
 from api import *
 from pypage import *
 from pypage import layout as lyt
-from datetime import datetime, timedelta
 from __kpi import Kpi
-from persistence import db
 
 status_page = Page(
     "Evaluation Status", filename="pypage-status.html").enable_bootstrap()

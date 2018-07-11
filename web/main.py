@@ -1,17 +1,12 @@
 import os
 import sys
-from flask import Flask, request, redirect, send_from_directory, render_template_string
+from flask import Flask, request, render_template_string
 from flask.ext.cache import Cache
 sys.path.append('..')
-from db import MongoDB
-from datetime import datetime, timedelta
+from ce.db import MongoDB
 import _config
-import json
-import pprint
-from __kpi import Kpi
 from view import *
 from api import *
-import pyecharts
 
 SERVER_PATH = os.path.abspath(os.path.dirname(sys.argv[0]))
 STATIC_DIR = os.path.join(SERVER_PATH, "static")

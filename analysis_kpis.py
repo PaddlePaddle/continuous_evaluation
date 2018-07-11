@@ -5,7 +5,7 @@
 analysis the benchmark model kpi
 """
 import numpy as np
-from utils import log
+from ce.utils import log
 
 
 class AnalysisKpiData(object):

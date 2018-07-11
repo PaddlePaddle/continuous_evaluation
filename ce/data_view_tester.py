@@ -1,7 +1,6 @@
-import data_view as dv
 import unittest
-import json
-from utils import log
+import ce.data_view as dv
+from ce.utils import log
 
 
 class KpiTester(unittest.TestCase):

@@ -1,4 +1,4 @@
-from utils import log, dictobj, __
+from ce.utils import log, dictobj, __
 import unittest
 from plumbum import local
 

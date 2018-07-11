@@ -1,7 +1,7 @@
-import unittest
-import data_view as dv
 import os
-from kpi import GreaterWorseKpi, LessWorseKpi
+import unittest
+import ce.data_view as dv
+from ce.kpi import GreaterWorseKpi, LessWorseKpi
 
 
 class GreaterWorseKpiTester(unittest.TestCase):

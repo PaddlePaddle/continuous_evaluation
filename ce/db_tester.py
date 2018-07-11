@@ -1,4 +1,4 @@
-from db import RedisDB, MongoDB
+from ce.db import RedisDB, MongoDB
 import unittest
 
 

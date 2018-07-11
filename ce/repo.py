@@ -1,4 +1,4 @@
-from utils import local, __
+from ce.utils import __
 
 
 def clone(repo_url, local_path):

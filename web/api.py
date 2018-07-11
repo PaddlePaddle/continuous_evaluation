@@ -9,7 +9,7 @@ sys.path.append('pypage')
 sys.path.append('..')
 import _config
 import json
-from db import MongoDB
+from ce.db import MongoDB
 from datetime import datetime, timedelta
 from __kpi import Kpi
 

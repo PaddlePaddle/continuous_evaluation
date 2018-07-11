@@ -3,10 +3,10 @@ Defines all the data structures in Python, it will make the database data operat
 '''
 
 import json
-from utils import dictobj, log
-from config_util import Config
 import pymongo
-from db import MongoDB
+from ce.utils import dictobj, log
+from ce.config_util import Config
+from ce.db import MongoDB
 
 shared_db = None
 

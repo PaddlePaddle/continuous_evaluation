@@ -1,8 +1,7 @@
-import bson
-from pymongo import MongoClient
 import redis
-from utils import log, dictobj
 import datetime
+from pymongo import MongoClient
+from ce.utils import log, dictobj
 
 
 class MongoDB(object):
