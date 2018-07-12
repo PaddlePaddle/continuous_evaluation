@@ -1,2 +1,4 @@
 redispy
-mockredispy
+pymongo
+numpy
+plumbum
