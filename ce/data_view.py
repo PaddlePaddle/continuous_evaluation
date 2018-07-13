@@ -7,11 +7,15 @@ import pymongo
 from ce.utils import dictobj, log
 from ce.config_util import Config
 from ce.db import MongoDB
+from ce.environ import Environ
 
 shared_db = None
 
+log.info = print
+log.warn = print
 
-def init_shared_db(test=False):
+
+def init_shared_db(test=None):
     global shared_db
     if not shared_db:
         config = Config.Global()
@@ -19,7 +23,7 @@ def init_shared_db(test=False):
             host=config.get('database', 'host'),
             port=config.get_int('database', 'port'),
             db=config.get('database', 'id'),
-            test=test)
+            test=Environ.test_mode() if test is not None else test)
 
 
 def parse_mongo_record(record):
@@ -49,13 +53,14 @@ class Commit:
         else:
             self.data = dictobj()
             self.data.commitid = commitid
-            self.data.tasks = []
+            self.data.tasks = tasks
 
         self.record_id = self.gen_record_id(commitid)
 
     def persist(self):
         init_shared_db()
         message = json.dumps(self.data)
+        log.info('persist', self.record_id, message)
         assert shared_db.set(self.record_id, message, table='commit')
         return self.record_id
 
@@ -121,6 +126,7 @@ class Task:
     def persist(self):
         init_shared_db()
         message = json.dumps(self.data)
+        log.info('persist', self.record_id, message)
         shared_db.set(self.record_id, message, table='task')
         return self.record_id
 
@@ -143,7 +149,6 @@ class Task:
             Kpi.gen_record_id(self.data.commitid, self.data.name, kpi)
             for kpi in self.data.kpis
         ]
-        print('kpi_ids', kpi_ids)
         # TODO(Superjomn) search multiple records in one time.
         res = []
         for kpi_id in kpi_ids:
@@ -228,6 +233,7 @@ class Kpi:
     def persist(self):
         init_shared_db()
         message = json.dumps(self.data)
+        log.info('persist', self.record_id, message)
         shared_db.set(self.record_id, message, table='kpi')
         return self.record_id
 

@@ -39,5 +39,7 @@ class dictobj(dict):
 
 
 def __(cmd):
-    cmd = cmd.split()
-    return local[cmd[0]](*cmd[1:]).strip()
+    fs = cmd.split()
+    cmd = local[fs[0]]
+    args = fs[1:]
+    return cmd(*args).strip()

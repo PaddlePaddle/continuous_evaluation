@@ -1,4 +1,5 @@
 from ce.utils import log
+from ce.environ import Environ
 import configparser
 
 
@@ -25,6 +26,6 @@ class Config(object):
     @staticmethod
     def Global(path=None):
         if not Config.g_config:
-            assert path
+            path = path if path else Environ.config()
             Config.g_config = Config(path)
         return Config.g_config

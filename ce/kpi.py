@@ -1,6 +1,7 @@
 from __future__ import division
 import numpy as np
 import ce.data_view as dv
+from ce.environ import Environ
 import os
 
 
@@ -37,16 +38,15 @@ class Kpi(object):
 
     def persist(self):
         ''' Persist the evalution result in some way. '''
-        commitid = os.environ.get('commitid', None)
-        task = os.environ.get('task', None)
+        commitid = Environ.commit()
+        task = Environ.task()
         assert commitid
         assert task
-        assert self._kpi
         kpi = dv.Kpi(
             commitid=commitid,
             task=task,
             name=self.name,
-            value=self._kpi,
+            value=self.cur_data,
             unit=self.unit_repr,
             short_description=self.short_description,
             description=self.description, )

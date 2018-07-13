@@ -28,9 +28,10 @@ class ShellTester(unittest.TestCase):
         log.info('ls -l output:', res)
 
     def test_multi_shell(self):
-        __('mkdir -p _test/_test1')
+        __('mkdir -p _test/__test1')
         with local.cwd('./_test'):
-            self.assertTrue(__('pwd').endswith('_test'))
+            self.assertTrue(
+                __('pwd').endswith('_test'), "cwd is %s" % __('pwd'))
             with local.cwd('./__test1'):
                 self.assertTrue(__('pwd').endswith('_test/__test1'))
 
