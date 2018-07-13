@@ -40,6 +40,28 @@ def evaluate_all_tasks():
             sucs.append(suc)
         return sucs
 
+    update_commit_status()
+
+
+def update_commit_status():
+    '''
+    Update the status of a commit.
+    :return: None
+    '''
+    suc = True
+    for task in tasks_to_evaluate():
+        task = dv.Task(commitid=Environ.commit(), name=task)
+        info = task.fetch_info()
+        for kpi in info.kpis:
+            kpi = dv.Kpi(commitid=Environ.commit(), name=task, name=kpi)
+            data = kpi.fetch_infos()
+            if not data.passed:
+                suc = False
+                break
+    state = 'passed' if suc else 'failed'
+    commit = dv.Commit(commitid=Environ.commit())
+    dv.shared_db.update_fields(commit.record_id, {'state': state})
+
 
 def evaluate_task(task_name):
     '''
@@ -85,7 +107,7 @@ def tasks_to_evaluate():
     with local.cwd(Environ.workspace()):
         dirs = __('ls').split()
         dirs = filter(lambda _: not _.startswith('__'), dirs)
-        dirs = filter(lambda _ : os.path.isdir(_) and os.path.isfile(os.path.join(_, 'run.xsh')), dirs)
+        dirs = filter(lambda _: os.path.isdir(_) and os.path.isfile(os.path.join(_, 'run.xsh')), dirs)
         print('dirs', [_ for _ in dirs])
         return [_ for _ in dirs]
 

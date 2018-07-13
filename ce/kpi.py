@@ -1,8 +1,9 @@
 from __future__ import division
+
 import numpy as np
+
 import ce.data_view as dv
 from ce.environ import Environ
-import os
 
 
 class Kpi(object):
@@ -13,7 +14,9 @@ class Kpi(object):
                  actived=False,
                  unit_repr='',
                  short_description='',
-                 description=''):
+                 description='',
+                 threshold=0.02,
+                 update_threshold=0.06):
         ''' Interface for Kpi tracker.
         actived: whether this test is turn on
             The test will yield error if failed only if it is actived.
@@ -25,6 +28,8 @@ class Kpi(object):
         self.records = []
         self.short_description = short_description
         self.description = description
+        self.threshold = threshold
+        self.update_threshold = update_threshold
 
         # calculated kpis
         self._kpi = None
@@ -38,6 +43,7 @@ class Kpi(object):
 
     def persist(self):
         ''' Persist the evalution result in some way. '''
+        # persist data
         commitid = Environ.commit()
         task = Environ.task()
         assert commitid
@@ -48,9 +54,16 @@ class Kpi(object):
             name=self.name,
             value=self.cur_data,
             unit=self.unit_repr,
+            kpi_type=self.__class__.__name__,
             short_description=self.short_description,
-            description=self.description, )
+            description=self.description,
+            passed=self.evaluate(),
+            logs=self.logs, )
         kpi.persist()
+
+        # try to update baseline if needed.
+        if self.to_update_baseline():
+            dv.KpiBaseline.update(Environ.task(), self.name, self.cur_data)
 
     @staticmethod
     def compare_with(cur, other):
@@ -60,6 +73,9 @@ class Kpi(object):
         `+/-` will make the result a positive ratio if `cur` is better, negative other-
         wise.
         '''
+        raise NotImplementedError
+
+    def to_update_baseline(self):
         raise NotImplementedError
 
     def cal_kpi(self):
@@ -74,7 +90,7 @@ class Kpi(object):
 
     @property
     def baseline_data(self):
-        task = os.environ.get('task')
+        task = Environ.task()
         return dv.KpiBaseline.get(task, self.name)
 
     @staticmethod
@@ -88,6 +104,16 @@ class Kpi(object):
             "duplicate register %s with a different class" % key
         Kpi.dic[key] = factor
 
+    @property
+    def logs(self):
+        if self.evaluate():
+            return 'passed'
+        else:
+            return 'current_data: {cur_data}, baseline_data: {baseline_data}, diff exceeds threshold: {threshold}'.format(
+                current_data=self.cur_data,
+                baseline_data=self.baseline_data,
+                threshold=self.threshold, )
+
 
 class GreaterWorseKpi(Kpi):
     def __init__(self,
@@ -96,14 +122,16 @@ class GreaterWorseKpi(Kpi):
                  threshold=0.01,
                  unit_repr='',
                  short_description='',
-                 description=''):
+                 description='',
+                 update_threshold=0.06):
         super().__init__(
             name=name,
             actived=actived,
             unit_repr=unit_repr,
             short_description=short_description,
-            description=description, )
-        self.threshold = threshold
+            description=description,
+            threshold=threshold,
+            update_threshold=update_threshold)
 
     def evaluate(self):
         if self.baseline_data is None:
@@ -111,36 +139,54 @@ class GreaterWorseKpi(Kpi):
         ratio = self.compare_with(self.cur_data, self.baseline_data)
         return ratio < self.threshold
 
+    def to_update_baseline(self):
+        if self.evaluate():
+            if self.baseline_data is None:
+                return True
+            ratio = self.compare_with(self.cur_data, self.baseline_data)
+            return -ratio > self.update_threshold
+
     @staticmethod
     def compare_with(cur, other):
         return (cur - other) / other
 
 
 class LessWorseKpi(Kpi):
-    def __init__(self,
-                 name,
-                 actived=False,
-                 threshold=0.01,
-                 unit_repr='',
-                 short_description='',
-                 description=''):
+    def __init__(
+            self,
+            name,
+            actived=False,
+            threshold=0.01,
+            unit_repr='',
+            short_description='',
+            description='',
+            update_threshold=0.06, ):
         super().__init__(
             name=name,
             actived=actived,
             unit_repr=unit_repr,
             short_description=short_description,
-            description=description, )
+            description=description,
+            threshold=threshold,
+            update_threshold=update_threshold, )
         self.threshold = threshold
-
-    @staticmethod
-    def compare_with(cur, other):
-        return (cur - other) / other
 
     def evaluate(self):
         if self.baseline_data is None:
             return True
         ratio = self.compare_with(self.cur_data, self.baseline_data)
         return -ratio < self.threshold
+
+    def to_update_baseline(self):
+        if self.evaluate():
+            if self.baseline_data is None:
+                return True
+            ratio = self.compare_with(self.cur_data, self.baseline_data)
+            return ratio > self.update_threshold
+
+    @staticmethod
+    def compare_with(cur, other):
+        return (cur - other) / other
 
 
 CostKpi = GreaterWorseKpi

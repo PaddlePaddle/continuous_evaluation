@@ -32,6 +32,27 @@ class MongoDB(object):
         value['date'] = datetime.datetime.utcnow()
         return self.table(table).insert_one(value)
 
+    def update(self, key, value, table=None):
+        if type(value) is str:
+            value = {'json': value}
+        cond = {'key': key} if type(key) is str else key
+        value.update(cond)
+        value['date'] = datetime.datetime.utcnow()
+        self.table(table).update_one(cond, {"$set": value}, upsert=False)
+
+    def update_fields(self, key, kv, table=None):
+        '''
+        Update some fields in a record.
+        :param key: str
+        :param kv: dict
+        :param table: str
+        :return: None
+        '''
+        cond = {'key': key} if type(key) is str else key
+        value = self.get(key, table=table)
+        value.update(kv)
+        self.update(key, value, table=table)
+
     def get(self, key, table=None, sort=None):
         '''
         Get a record according to key or a dict.

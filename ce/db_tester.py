@@ -23,6 +23,27 @@ class MongoDBTester(unittest.TestCase):
         self.assertTrue(rcd)
         self.assertEqual(rcd.name, "xxx0")
 
+    def test_update_table(self):
+        self.db.set('id0', dict(name='xxx0'), table='table0')
+        rcd = self.db.get('id0', table='table0')
+        self.assertTrue(rcd)
+        self.assertEqual(rcd.name, "xxx0")
+        self.db.update('id0', dict(name='xxx1'), table='table0')
+        rcd = self.db.get('id0', table='table0')
+        self.assertTrue(rcd)
+        self.assertEqual(rcd.name, 'xxx1')
+
+    def test_update_fields(self):
+        self.db.set('id0', dict(name='xxx0', sex='male'), table='table0')
+        rcd = self.db.get('id0', table='table0')
+        self.assertTrue(rcd)
+        self.assertEqual(rcd.name, "xxx0")
+
+        self.db.update_fields('id0', dict(sex='female'), table='table0')
+        rcd = self.db.get('id0', table='table0')
+        self.assertEqual(rcd.name, 'xxx0')
+        self.assertEqual(rcd.sex, 'female')
+
     def test_gets(self):
         self.db.set({'type': 'book'}, dict(name='xxx0'), table='table0')
         self.db.set({'type': 'book'}, dict(name='xxx0'), table='table0')

@@ -40,13 +40,14 @@ def parse_mongo_record(record):
 
 
 class Commit:
-    def __init__(self, commitid, tasks=[], data=None):
+    def __init__(self, commitid, tasks=[], state='running', data=None):
         '''
         :param commitid: str
             long commit id.
         :param date: None
         :param tasks: list of str
             names of tasks.
+        :param state: running/fail/success
         '''
         if data:
             self.data = dictobj(data)
@@ -54,14 +55,18 @@ class Commit:
             self.data = dictobj()
             self.data.commitid = commitid
             self.data.tasks = tasks
+            self.data.state = state
 
         self.record_id = self.gen_record_id(commitid)
 
-    def persist(self):
+    def persist(self, update=False):
         init_shared_db()
         message = json.dumps(self.data)
-        log.info('persist', self.record_id, message)
-        assert shared_db.set(self.record_id, message, table='commit')
+        if not update:
+            log.info('persist', self.record_id, message)
+            assert shared_db.set(self.record_id, message, table='commit')
+        else:
+            pass
         return self.record_id
 
     def fetch_info(self):
@@ -187,9 +192,26 @@ class Kpi:
                  unit='',
                  short_description='',
                  description='',
+                 kpi_type='',
                  value=None,
                  actived=False,
+                 passed=None,
+                 logs=None,
                  data=None):
+        '''
+        :param commitid: str
+        :param task: str
+        :param name: str
+        :param unit: str
+        :param short_description: str
+        :param description: str
+        :param kpi_type: str
+        :param value: any type
+        :param actived: bool
+        :param passed: bool
+        :param logs: str
+        :param data: str
+        '''
         if data:
             self.data = dictobj(data)
         else:
@@ -198,12 +220,15 @@ class Kpi:
             self.data.task = task
             # str
             self.data.name = name
+            self.data.kpi_type = kpi_type
             # int or bool
             self.data.value = value
             self.data.unit = unit
             self.data.short_description = short_description
             self.data.description = description
-            self.actived = actived
+            self.data.actived = actived
+            self.data.passed = passed
+            self.data.logs = logs
 
     def set_value(self, val):
         '''
