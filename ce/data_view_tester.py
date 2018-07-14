@@ -81,12 +81,15 @@ class TaskTester(unittest.TestCase):
 
     def test_query_all(self):
         for i in range(10):
-            t = dv.Task(commitid="xx0%s" % id, name="suome", kpis=[])
+            t = dv.Task(commitid="xx0%d" % i, name="suome", kpis=[])
             t.persist()
 
-        self.assertEqual(len(dv.Task.fetch_all()), 10)
+        records = dv.Task.fetch_all()
+        log.info('fetch all records', records)
+        self.assertEqual(len(records), 10)
 
     def tearDown(self):
+        log.warn('delete test database')
         dv.shared_db.client.drop_database('test')
 
 

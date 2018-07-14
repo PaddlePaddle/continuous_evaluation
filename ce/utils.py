@@ -38,6 +38,42 @@ class dictobj(dict):
             raise AttributeError("No such attribute: %s" % item)
 
 
+class __check_type__:
+    @staticmethod
+    def match_str(*x):
+        for i in range(len(x)):
+            assert isinstance(x[i], str), __check_type__._error_info(x[i], i)
+
+    @staticmethod
+    def match_float(*x):
+        for i in range(len(x)):
+            assert isinstance(x[i], float), __check_type__._error_info(x[i], i)
+
+    @staticmethod
+    def match_list(*x):
+        for i in range(len(x)):
+            assert isinstance(x[i], list), __check_type__._error_info(x[i], i)
+
+    @staticmethod
+    def match_bool(*x):
+        for i in range(len(x)):
+            assert isinstance(x[i], bool), __check_type__._error_info(x[i], i)
+
+    @staticmethod
+    def match_bool_or_none(*x):
+        for i in range(len(x)):
+            assert isinstance(
+                x[i], bool) or x[i] is None, __check_type__._error_info(x[i],
+                                                                        i)
+
+    @staticmethod
+    def _error_info(x, i=None):
+        res = ""
+        if i is not None:
+            res = "%dth argument type check failed" % i
+        return res + ", found type %s" % str(type(x))
+
+
 def __(cmd):
     fs = cmd.split()
     cmd = local[fs[0]]

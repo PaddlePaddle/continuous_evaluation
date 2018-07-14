@@ -17,6 +17,7 @@ class MongoDB(object):
         self.test = test
         self.client = MongoClient(host, port)
         self.db = getattr(self.client, db)
+        log.warn('DB: {db}'.format(db=db))
 
     def tables(self):
         return self.db.collection_names(include_system_collections=False)

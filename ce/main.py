@@ -53,7 +53,7 @@ def update_commit_status():
         task = dv.Task(commitid=Environ.commit(), name=task)
         info = task.fetch_info()
         for kpi in info.kpis:
-            kpi = dv.Kpi(commitid=Environ.commit(), name=task, name=kpi)
+            kpi = dv.Kpi(commitid=Environ.commit(), task=task, name=kpi)
             data = kpi.fetch_infos()
             if not data.passed:
                 suc = False
@@ -134,7 +134,7 @@ def load_kpis(root, task_name):
         cmd = 'from %s.%s.continuous_evaluation import tracking_kpis' % (
             module, task_name)
         print('cmd', cmd)
-        exec(cmd, env)
+        exec (cmd, env)
         tracking_kpis = env['tracking_kpis']
         return tracking_kpis
 

@@ -4,7 +4,7 @@ Defines all the data structures in Python, it will make the database data operat
 
 import json
 import pymongo
-from ce.utils import dictobj, log
+from ce.utils import dictobj, log, __check_type__
 from ce.config_util import Config
 from ce.db import MongoDB
 from ce.environ import Environ
@@ -39,7 +39,15 @@ def parse_mongo_record(record):
     return dictobj(info)
 
 
-class Commit:
+class DataStruct:
+    def __str__(self):
+        return str(self.data)
+
+    def __repr__(self):
+        return str(self.data)
+
+
+class Commit(DataStruct):
     def __init__(self, commitid, tasks=[], state='running', data=None):
         '''
         :param commitid: str
@@ -66,7 +74,8 @@ class Commit:
             log.info('persist', self.record_id, message)
             assert shared_db.set(self.record_id, message, table='commit')
         else:
-            pass
+            log.info('update', self.record_id, message)
+            shared_db.update(self.record_id, message, table='commit')
         return self.record_id
 
     def fetch_info(self):
@@ -98,6 +107,7 @@ class Commit:
 
     @staticmethod
     def gen_record_id(commitid):
+        __check_type__.match_str(commitid)
         assert commitid
         return '<commit>/%s' % commitid
 
@@ -109,8 +119,10 @@ class Commit:
                 for info in infos] if infos else []
 
 
-class Task:
-    def __init__(self, commitid='', name='', kpis=[], data=None):
+class Task(DataStruct):
+    def __init__(self, commitid='', name='', kpis=[], env_desc='', data=None):
+        __check_type__.match_str(commitid, name, env_desc)
+        __check_type__.match_list(kpis)
         if data:
             self.data = dictobj(data)
         else:
@@ -118,7 +130,7 @@ class Task:
             self.data.name = name
             self.data.commitid = commitid
             # Execution environment.
-            self.data.env_desc = ''
+            self.data.env_desc = env_desc
             # list of Kpi
             self.data.kpis = kpis
 
@@ -167,7 +179,7 @@ class Task:
     def fetch_all():
         init_shared_db()
         infos = shared_db.gets({}, table="task")
-        return [Task(json.loads(info['json']))
+        return [Task(data=json.loads(info['json']))
                 for info in infos] if infos else []
 
     @staticmethod
@@ -177,10 +189,11 @@ class Task:
         :param task: str
         :return: str
         '''
+        __check_type__.match_str(commitid, task)
         return "<task>/%s/%s" % (commitid, task)
 
 
-class Kpi:
+class Kpi(DataStruct):
     '''
     KPI data view.
     '''
@@ -196,7 +209,7 @@ class Kpi:
                  value=None,
                  actived=False,
                  passed=None,
-                 logs=None,
+                 logs='',
                  data=None):
         '''
         :param commitid: str
@@ -212,6 +225,11 @@ class Kpi:
         :param logs: str
         :param data: str
         '''
+        __check_type__.match_str(commitid, task, name, unit, short_description,
+                                 description, kpi_type, logs)
+        __check_type__.match_bool(actived)
+        __check_type__.match_bool_or_none(passed)
+
         if data:
             self.data = dictobj(data)
         else:
@@ -263,11 +281,12 @@ class Kpi:
         return self.record_id
 
     @staticmethod
-    def gen_record_id(commitid, tasks, kpi):
+    def gen_record_id(commitid, task, kpi):
+        __check_type__.match_str(commitid, task, kpi)
         assert commitid
-        assert tasks
+        assert task
         assert kpi
-        return "<kpi>/%s/%s/%s" % (commitid, tasks, kpi)
+        return "<kpi>/%s/%s/%s" % (commitid, task, kpi)
 
 
 class KpiBaseline:
@@ -281,6 +300,7 @@ class KpiBaseline:
         :param comment: str
         :return: any type
         '''
+        __check_type__.match_str(task, kpi)
         key = '%s/%s' % (task, kpi)
         value = json.dumps({'kpi': value})
         return shared_db.set(key, value, table='baseline')
@@ -293,6 +313,7 @@ class KpiBaseline:
         :param kpi: str
         :return: kpi.
         '''
+        __check_type__.match_str(task, kpi)
         key = '%s/%s' % (task, kpi)
         res = shared_db.get(key,
                             table='baseline',
