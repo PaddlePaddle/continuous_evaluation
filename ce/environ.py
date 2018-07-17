@@ -4,7 +4,7 @@ from ce.utils import local
 
 class Environ(object):
     '''
-    All the environment variables.
+    All the environment variables, setter and getter.
     '''
 
     @staticmethod
