@@ -9,6 +9,8 @@ class Config(object):
 
     def __init__(self, path):
         log.warn('Loading config from %s' % path)
+        abs_path = os.path.join(os.getcwd(), path)
+        path = abs_path if os.path.isfile(abs_path) else path
         assert os.path.isfile(path), "file not exists: %s" % path
         self.config = configparser.ConfigParser()
         self.config.read(path)

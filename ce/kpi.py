@@ -55,6 +55,7 @@ class Kpi(object):
             name=self.name,
             value=self.cur_data,
             unit=self.unit_repr,
+            actived=self.actived,
             kpi_type=self.__class__.__name__,
             short_description=self.short_description,
             description=self.description,
@@ -111,7 +112,7 @@ class Kpi(object):
             return 'passed'
         else:
             return 'current_data: {cur_data}, baseline_data: {baseline_data}, diff exceeds threshold: {threshold}'.format(
-                current_data=self.cur_data,
+                cur_data=self.cur_data,
                 baseline_data=self.baseline_data,
                 threshold=self.threshold, )
 

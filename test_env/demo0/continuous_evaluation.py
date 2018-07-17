@@ -1,7 +1,7 @@
 from ce.kpi import LessWorseKpi
 
 kpi0 = LessWorseKpi(
-    name='cost0',
+    name='kpi0',
     actived=True,
     threshold=0.02,
     unit_repr='qps',
@@ -9,11 +9,11 @@ kpi0 = LessWorseKpi(
     description='some long description')
 
 kpi1 = LessWorseKpi(
-    name='cost1',
+    name='kpi1',
     actived=True,
     threshold=0.02,
-    unit_repr='qps',
-    short_description='Some description',
+    unit_repr='cm',
+    short_description='This kpi should failed',
     description='some long description')
 
 tracking_kpis = [kpi0, kpi1]

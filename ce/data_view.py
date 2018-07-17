@@ -3,13 +3,25 @@ Defines all the data structures in Python, it will make the database data operat
 '''
 
 import json
+import numpy as np
 import pymongo
 from ce.utils import dictobj, log, __check_type__
 from ce.config_util import Config
 from ce.db import MongoDB
 from ce.environ import Environ
 
-shared_db = None
+
+class DB(MongoDB):
+    def __init__(self, test=False):
+        config = Config.Global(Environ.config())
+        super().__init__(
+            host=config.get('database', 'host'),
+            port=config.get_int('database', 'port'),
+            db=config.get('database', 'id'),
+            test=Environ.test_mode() if test is not None else test)
+
+
+shared_db = DB()
 
 log.info = print
 log.warn = print
@@ -228,7 +240,7 @@ class Kpi(DataStruct):
         __check_type__.match_str(commitid, task, name, unit, short_description,
                                  description, kpi_type, logs)
         __check_type__.match_bool(actived)
-        __check_type__.match_bool_or_none(passed)
+        __check_type__.match_bool_or_none(bool(passed))
 
         if data:
             self.data = dictobj(data)
@@ -260,7 +272,10 @@ class Kpi(DataStruct):
         data = shared_db.get(self.record_id, table='kpi')
         assert data, 'no KPI record which key is %s' % self.record_id
 
-        self.data = json.loads(data['json'])
+        self.data = dictobj(json.loads(data['json']))
+        # restore bool
+        for key in ["actived", "passed"]:
+            self.data[key] = True if self.data[key] == 1 else False
         return self.data
 
     @staticmethod
@@ -274,7 +289,11 @@ class Kpi(DataStruct):
                                   self.data.name)
 
     def persist(self):
-        init_shared_db()
+        for key, item in self.data.items():
+            if isinstance(
+                    type(item),
+                    bool) or type(item) is np.bool or type(item) is np.bool_:
+                self.data[key] = 1 if item else 0
         message = json.dumps(self.data)
         log.info('persist', self.record_id, message)
         shared_db.set(self.record_id, message, table='kpi')

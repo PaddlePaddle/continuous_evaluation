@@ -21,6 +21,7 @@ def evaluate_all_tasks():
     Evaluate all the tasks
     :return: list of status.
     '''
+    log.warn('environ.workspace', Environ.workspace())
     with local.cwd(Environ.workspace()):
         log.info('Evaluate all the tasks in %s' % __('pwd'))
 
@@ -116,7 +117,7 @@ def parse_args():
     arg = argparse.ArgumentParser()
     arg.add_argument('--config', type=str, default='')
     arg.add_argument('--is_test', type=bool, default=False)
-    arg.add_argument('--workspace', type=str, default='')
+    arg.add_argument('--workspace', type=str, default='.')
     args = arg.parse_args()
 
     # expose all the configs as environ for easier usage.
@@ -143,6 +144,5 @@ if __name__ == '__main__':
     args = parse_args()
 
     Config.Global(args.config)
-    init_shared_db(test=args.is_test)
 
     evaluate_all_tasks()
