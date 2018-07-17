@@ -4,6 +4,7 @@ import numpy as np
 
 import ce.data_view as dv
 from ce.environ import Environ
+from ce.utils import log
 
 
 class Kpi(object):
@@ -73,7 +74,7 @@ class Kpi(object):
         `+/-` will make the result a positive ratio if `cur` is better, negative other-
         wise.
         '''
-        raise NotImplementedError
+        return (cur - other) / other
 
     def to_update_baseline(self):
         raise NotImplementedError
@@ -146,10 +147,6 @@ class GreaterWorseKpi(Kpi):
             ratio = self.compare_with(self.cur_data, self.baseline_data)
             return -ratio > self.update_threshold
 
-    @staticmethod
-    def compare_with(cur, other):
-        return (cur - other) / other
-
 
 class LessWorseKpi(Kpi):
     def __init__(
@@ -175,6 +172,7 @@ class LessWorseKpi(Kpi):
         if self.baseline_data is None:
             return True
         ratio = self.compare_with(self.cur_data, self.baseline_data)
+        log.info('ratio', ratio)
         return -ratio < self.threshold
 
     def to_update_baseline(self):
@@ -183,10 +181,6 @@ class LessWorseKpi(Kpi):
                 return True
             ratio = self.compare_with(self.cur_data, self.baseline_data)
             return ratio > self.update_threshold
-
-    @staticmethod
-    def compare_with(cur, other):
-        return (cur - other) / other
 
 
 CostKpi = GreaterWorseKpi

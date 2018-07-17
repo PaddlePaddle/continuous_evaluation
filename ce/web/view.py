@@ -12,13 +12,13 @@ class FakeView:
             res.commits.append(
                 dictobj(
                     commit='ffxcaaf',
-                    status=random_status(),
-                )
-            )
+                    status=random_status(), ))
 
         res.tasks = []
         for task in range(10):
-            res.tasks.append(dictobj(kpis=[], short_description="task some desc"))
+            res.tasks.append(
+                dictobj(
+                    kpis=[], short_description="task some desc"))
             for i in range(6):
                 res.tasks[-1].kpis.append(
                     dictobj(
@@ -28,9 +28,7 @@ class FakeView:
                         unit='ms',
                         info='',
                         status=random_status(),
-                        short_description="some desc",
-                    )
-                )
+                        short_description="some desc", ))
         return res
 
 

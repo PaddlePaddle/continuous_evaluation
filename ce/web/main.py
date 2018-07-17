@@ -1,6 +1,7 @@
 import os
 import sys
-from flask import (Flask, request, redirect, send_from_directory, render_template, send_file)
+from flask import (Flask, request, redirect, send_from_directory,
+                   render_template, send_file)
 from ce.web.view import FakeView
 #from flask.ext.cache import Cache
 
@@ -25,6 +26,7 @@ def report():
 @app.route('/')
 def hello():
     return 'Hello, World!'
+
 
 @app.route('/static/<path:path>')
 def static_view(path):
