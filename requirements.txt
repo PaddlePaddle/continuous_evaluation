@@ -2,3 +2,5 @@ redispy
 pymongo
 numpy
 plumbum
+Flask
+flask_cache

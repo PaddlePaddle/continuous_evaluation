@@ -17,9 +17,15 @@ class MainUnittest(unittest.TestCase):
             'python main.py --config %s --is_test 1 --workspace ../test_env' %
             config_path)
         log.info('logs', logs)
-        print('kpi', dv.shared_db.get({}, table='kpi'))
-        print('task', dv.shared_db.get({}, table='task'))
-        print('commit', dv.shared_db.get({}, table='commit'))
+        kpi = dv.shared_db.get({}, table='kpi')
+        task = dv.shared_db.get({}, table='task')
+        commit = dv.shared_db.get({}, table='commit')
+        self.assertTrue(kpi)
+        self.assertTrue(task)
+        self.assertTrue(commit)
+        log.info('kpi', kpi)
+        log.info('task', task)
+        log.info('commit', commit)
 
     def tearDown(self):
         log.warn('delete test db')

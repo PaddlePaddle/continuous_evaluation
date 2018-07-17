@@ -1,4 +1,5 @@
 from ce.utils import log
+import os
 from ce.environ import Environ
 import configparser
 
@@ -8,6 +9,7 @@ class Config(object):
 
     def __init__(self, path):
         log.warn('Loading config from %s' % path)
+        assert os.path.isfile(path), "file not exists: %s" % path
         self.config = configparser.ConfigParser()
         self.config.read(path)
 
