@@ -134,7 +134,7 @@ def load_kpis(root, task_name):
         cmd = 'from %s.%s.continuous_evaluation import tracking_kpis' % (
             module, task_name)
         print('cmd', cmd)
-        exec(cmd, env)
+        exec (cmd, env)
         tracking_kpis = env['tracking_kpis']
         return tracking_kpis
 
