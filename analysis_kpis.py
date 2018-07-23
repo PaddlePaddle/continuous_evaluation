@@ -16,7 +16,7 @@ class AnalysisKpiData(object):
         self.kpis_list = kpis_list
         self.kpis_status = kpis_status
         self.analysis_result = {}
-        self.diff_thre = 0.02
+        self.diff_thre = 0.05
 
     def analysis_data(self):
         """
