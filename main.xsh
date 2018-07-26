@@ -31,7 +31,7 @@ def parse_args():
 def main():
     #try_start_mongod()
     args = parse_args()
-    if not args.modified:
+    if (not args.modified) and (not specific_tasks):
         refresh_baseline_workspace()
     suc, exception_task = evaluate_tasks(args)
     if suc:
@@ -151,7 +151,12 @@ def evaluate(task_name):
 
     with PathRecover():
         cd @(task_dir)
-        ./run.xsh
+        if os.path.exists("run.sh"):
+            print ("exec run.sh")
+            ./run.sh
+        else:
+            print ("exec run.xsh")
+            ./run.xsh
 
         tracking_kpis = get_kpi_tasks(task_name)
 
