@@ -85,7 +85,7 @@ class GreaterWorseKpi(Kpi):
     def __init__(self,
                  name,
                  diff_thre,
-                 skip_head=2,
+                 skip_head=0,
                  actived=False,
                  unit_repr=None,
                  desc=None):
@@ -168,7 +168,7 @@ class LessWorseKpi(GreaterWorseKpi):
     def __init__(self,
                  name,
                  diff_thre,
-                 skip_head=2,
+                 skip_head=0,
                  actived=False,
                  unit_repr=None,
                  desc=None):
