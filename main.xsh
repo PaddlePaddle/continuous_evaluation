@@ -11,6 +11,7 @@ import os
 import repo
 import argparse
 import traceback
+import time
 
 $ceroot=config.workspace
 os.environ['ceroot'] = config.workspace
@@ -85,9 +86,21 @@ def update_baseline():
 def refresh_baseline_workspace():
     ''' download baseline. '''
     if mode != "baseline_test":
-        # production mode, clean baseline and rerun
-        rm -rf @(config.baseline_path)
-        git clone @(config.baseline_repo_url) @(config.baseline_path)
+        # ssh from home is not very stable, can be solved by retry.
+        max_retry = 10
+        for cnt in range(max_retry):
+            try:
+                # production mode, clean baseline and rerun
+                rm -rf @(config.baseline_path)
+                git clone @(config.baseline_repo_url) @(config.baseline_path)
+                log.info("git clone %s suc" % config.baseline_repo_url)
+                break
+            except Exception as e:
+                if cnt == max_retry - 1:
+                    raise Exception("git clone failed %s " % e)
+                else:
+                    log.warn('git clone failed %d, %s' % (cnt, e))
+                    time.sleep(3)
 
 
 def evaluate_tasks(args):
