@@ -246,11 +246,9 @@ def get_kpi_tasks(task_name):
             exec('from tasks.%s.continuous_evaluation import tracking_kpis'
                 % task_name, env)
             log.info("import from continuous_evaluation suc.")
-        except Exception as e:
-            log.warn("import failed. %s" % e)    
+        except Exception as e: 
             exec('from tasks.%s._ce import tracking_kpis'
                 % task_name, env)
-            log.info("import from _ce suc")
         
         tracking_kpis = env['tracking_kpis']
         print(tracking_kpis)
