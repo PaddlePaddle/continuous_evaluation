@@ -11,12 +11,14 @@ import os
 import repo
 import argparse
 import traceback
+import time
 
 $ceroot=config.workspace
 os.environ['ceroot'] = config.workspace
 mode = os.environ.get('mode', 'evaluation')
 specific_tasks = os.environ.get('specific_tasks', None)
 specific_tasks = specific_tasks.split(',') if specific_tasks else []
+case_type = os.environ.get('case_type', None)
 
 
 def parse_args():
@@ -31,16 +33,16 @@ def parse_args():
 def main():
     #try_start_mongod()
     args = parse_args()
-    if not args.modified:
+    if (not args.modified) and (not specific_tasks) and (not case_type):
         refresh_baseline_workspace()
     suc, exception_task = evaluate_tasks(args)
     if suc:
         display_success_info()
-        if mode != "baseline_test" and not args.modified and not specific_tasks:
+        if mode != "baseline_test" and (not args.modified) and (not specific_tasks):
             update_baseline()
         exit 0
     else:
-        if not args.modified:
+        if (not args.modified) and (not specific_tasks):
             display_fail_info(exception_task)
         sys.exit(-1)
         exit -1
@@ -84,9 +86,21 @@ def update_baseline():
 def refresh_baseline_workspace():
     ''' download baseline. '''
     if mode != "baseline_test":
-        # production mode, clean baseline and rerun
-        rm -rf @(config.baseline_path)
-        git clone @(config.baseline_repo_url) @(config.baseline_path)
+        # ssh from home is not very stable, can be solved by retry.
+        max_retry = 10
+        for cnt in range(max_retry):
+            try:
+                # production mode, clean baseline and rerun
+                rm -rf @(config.baseline_path)
+                git clone @(config.baseline_repo_url) @(config.baseline_path)
+                log.info("git clone %s suc" % config.baseline_repo_url)
+                break
+            except Exception as e:
+                if cnt == max_retry - 1:
+                    raise Exception("git clone failed %s " % e)
+                else:
+                    log.warn('git clone failed %d, %s' % (cnt, e))
+                    time.sleep(3)
 
 
 def evaluate_tasks(args):
@@ -113,17 +127,18 @@ def evaluate_tasks(args):
         
     for task in tasks:
         try:
-            passed, eval_infos, kpis, kpi_types = evaluate(task)
+            passed, eval_infos, kpis, kpi_values, kpi_types = evaluate(task)
             if mode != "baseline_test":
                 log.warn('add evaluation %s result to mongodb' % task)
                 kpi_objs = get_kpi_tasks(task)
-                if not args.modified:
+                if (not args.modified) and (not specific_tasks):
                     pst.add_evaluation_record(commitid = paddle_commit,
                                               date = commit_time,
                                               task = task,
                                               passed = passed,
                                               infos = eval_infos,
                                               kpis = kpis,
+                                              kpi_values = kpi_values,
                                               kpi_types = kpi_types,
                                               kpi_objs = kpi_objs)
             if not passed:
@@ -151,14 +166,20 @@ def evaluate(task_name):
 
     with PathRecover():
         cd @(task_dir)
-        ./run.xsh
+        if os.path.exists(".run.sh"):
+            print ("exec .run.sh")
+            ./.run.sh
+        else:
+            print ("exec run.xsh")
+            ./run.xsh
 
         tracking_kpis = get_kpi_tasks(task_name)
 
         # evaluate all the kpis
         eval_infos = []
-        kpis = {}
-        kpi_types = {}
+        kpis = []
+        kpi_values = []
+        kpi_types = []
         passed = True
         for kpi in tracking_kpis:
             suc = kpi.evaluate(task_dir)
@@ -167,19 +188,24 @@ def evaluate(task_name):
                 passed = False
                 log.error("Task [%s] failed!" % task_name)
                 log.error("details:", kpi.fail_info)
-
-            kpis[kpi.name] = kpi.cur_data
-            kpi_types[kpi.name] = kpi.__class__.__name__
+            kpis.append(kpi.name)
+            kpi_values.append(kpi.cur_data)
+            kpi_types.append(kpi.__class__.__name__)
             # if failed, still continue to evaluate the other kpis to get full statistics.
             eval_infos.append(kpi.fail_info if not suc else kpi.success_info)
-        return passed, eval_infos, kpis, kpi_types
+        log.info("evaluation kpi info: %s %s %s" % (passed, eval_infos, kpis))
+        return passed, eval_infos, kpis, kpi_values, kpi_types
 
 
 def get_tasks():
     with PathRecover():
         cd @(config.workspace)
         subdirs = $(ls @(config.baseline_path)).split()
-        return filter(lambda x : not (x.startswith('__') or x.endswith('.md')), subdirs)
+        if case_type:
+            return filter(lambda x : x.startswith('%s_' % case_type), subdirs)
+        else:
+            return filter(lambda x : not (x.startswith('__') or x.startswith('model_')
+                   or x.endswith('.md')), subdirs)
 
 
 def display_fail_info(exception_task):
@@ -188,7 +214,7 @@ def display_fail_info(exception_task):
     log.error('Evaluate [%s] failed!' % paddle_commit)
     log.warn('The details:')
     for info in infos:
-        if not info['passed']:
+        if not info['passed'] and not info['task'].startswith('model_'):
             log.warn('task:', info['task'])
             log.warn('passed: ', info['passed'])
             log.warn('infos', '\n'.join(info['infos']))
@@ -217,9 +243,16 @@ def get_kpi_tasks(task_name):
     with PathRecover():
         cd @(config.workspace)
         env = {}
-        exec('from tasks.%s.continuous_evaluation import tracking_kpis'
-             % task_name, env)
+        try:
+            exec('from tasks.%s.continuous_evaluation import tracking_kpis'
+                % task_name, env)
+            log.info("import from continuous_evaluation suc.")
+        except Exception as e: 
+            exec('from tasks.%s._ce import tracking_kpis'
+                % task_name, env)
+        
         tracking_kpis = env['tracking_kpis']
+        print(tracking_kpis)
         return tracking_kpis
 
 
