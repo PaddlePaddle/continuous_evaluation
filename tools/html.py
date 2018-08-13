@@ -120,7 +120,7 @@ class Html(object):
         contentadd = """<tr>
         <td>""" + case + """</td>
         <td>""" + str(result) + """</td>
-        <td><a href="http://180.76.57.222/commit/draw_scalar?task=%s">%s</a></td>
+        <td><a href="http://ce.paddlepaddle.org/commit/draw_scalar?task=%s">%s</a></td>
         </tr> 
         """ % (log, log)
         pos = content.find("</table>")
