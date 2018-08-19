@@ -15,17 +15,20 @@ Date: 2018/07/11
 #from common import config
 import time
 from datetime import datetime, timedelta
+
 #CONF = config.CommonConf()
+
 
 class Html(object):
     """html"""
+
     def __init__(self, html_name_only="index.html"):
         self.html_name = html_name_only
-        pass    
+        pass
 
     def html_create_logs(self):
-        """html create"""        
-        f = open(self.html_name, 'w') 
+        """html create"""
+        f = open(self.html_name, 'w')
         message = """ 
         <!DOCTYPE html> 
         <html> 
@@ -43,38 +46,54 @@ class Html(object):
         </table> 
         </body> 
         </html> 
-        """ 
-        f.write(message) 
+        """
+        f.write(message)
         f.close()
 
-    def html_create(self, period):
-        begin = (datetime.now() - timedelta(days=period)).strftime('%Y-%m-%d %H:%M:%S')
-        dd_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        """html create"""        
-        f = open(self.html_name, 'w') 
+    def html_create(self, period, duty, sums=0, suc=0):
+        begin = (datetime.now() + timedelta(hours=8) - timedelta(days=period)
+                 ).strftime('%Y-%m-%d %H:%M:%S')
+        dd_str = (
+            datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
+        """html create"""
+        f = open(self.html_name, 'w')
         message = """ 
         <!DOCTYPE html> 
         <html> 
         <head> 
         <font size="5"> 
-        Report for PaddlePaddle CE tasks. </font>
-        <br>
-        <font size="3">
-        %s ---- %s
+        <b>CE weekly report: </b> </font>
+
+        <font size="5">
+        <font size="3" color="blue"> 开始时间</font> 
+        <b>%s</b>  
+        <font size="3" color="blue"> 结束时间</font> 
+        <b>%s</b>
         </font><br><br>
+
+        <font size="5"> <b>本周summary：</b> </font> <br>
+        <font size="3"> 一共执行全量模型：%s次，成功：%s次， 失败：%s次 </font>
+        <br><br><br>
+        
+        <font size="5"> <b>本周值班主要问题：</b> </font>
+        <br><br>
+        <font size="3"> 值班人问题记录 </font><br><br>
+        <font size="3"> %s </font><br><br>
+        <font size="5"> <b>所有模型执行情况：</b> </font>
+        <br>
         </head> 
         <body> 
         <table border="1" align="center"> 
           <tr> 
            <th width="200px">models</th> 
            <th>result of model's kpis</th> 
-           <th width="600px">msg</th> 
+           <th width="600px">detail msg</th> 
           </tr> 
         </table> 
         </body> 
         </html> 
-        """ % (begin, dd_str)
-        f.write(message) 
+        """ % (begin, dd_str, sums, suc, sums - suc, duty)
+        f.write(message)
         f.close()
 
     def html_add_script(self):
@@ -104,8 +123,8 @@ class Html(object):
         <td>""" + logtype + """</td>
         <td>""" + info + """</td>
         </tr> 
-        """ 
-        print (contentadd)
+        """
+        print(contentadd)
         pos = content.find("</table>")
         if pos != -1:
             content = content[:pos] + contentadd + content[pos:]
@@ -175,7 +194,7 @@ class Html(object):
                 ok_count += 1
             if 'Fail' in line:
                 fail_count += 1
-        if((ok_count + fail_count) != 0):
+        if ((ok_count + fail_count) != 0):
             count = float(ok_count) / (ok_count + fail_count)
         else:
             count = 0
@@ -192,5 +211,4 @@ class Html(object):
             content = content[:pos] + contentadd + content[pos:]
             file = open(self.html_name, "w")
             file.write(content)
-            file.close() 
-
+            file.close()
