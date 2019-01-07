@@ -9,7 +9,7 @@ db = MongoDB(config.db_name, host=config.db_host, port=config.db_port)
 
 
 def add_evaluation_record(commitid, date, task, passed, infos, kpis, kpi_values, kpi_types,
-                          kpi_objs):
+                          kpi_objs, detail_infos):
     '''
     persist the evaluation infomation of a task to the database.
 
@@ -36,6 +36,7 @@ def add_evaluation_record(commitid, date, task, passed, infos, kpis, kpi_values,
         'type': 'kpi',
         'passed': passed,
         'infos': infos,
+        'detail_infos': detail_infos,
         'kpis-keys': kpis,
         'kpis-values':
         json.dumps(list(value.tolist() for value in kpi_values)),
