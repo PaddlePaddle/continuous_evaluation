@@ -5,7 +5,7 @@ from flask.ext.cache import Cache
 sys.path.append('..')
 from db import MongoDB
 from datetime import datetime, timedelta
-import config
+import _config
 import json
 import pprint
 from kpi import Kpi
@@ -20,9 +20,9 @@ TEMPLATE_DIR = os.path.join(SERVER_PATH, "template")
 app = Flask(
     "modelce", static_url_path=STATIC_DIR, template_folder=TEMPLATE_DIR)
 cache = Cache(
-    app, config={'CACHE_TYPE': 'filesystem',
+    app, _config={'CACHE_TYPE': 'filesystem',
                  'CACHE_DIR': './_cache'})
-db = MongoDB(config.db_name, config.db_host, config.db_port)
+db = MongoDB(_config.db_name, _config.db_host, _config.db_port)
 
 
 @app.route('/')

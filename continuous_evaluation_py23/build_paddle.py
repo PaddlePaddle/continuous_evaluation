@@ -3,13 +3,13 @@ RAISE_SUBPROC_ERROR = True
 XONSH_SHOW_TRACEBACK = True
 
 import sys; sys.path.insert(0, '')
-import config
+import _config
 import subprocess
 import os
 import shutil
 
 
-os.chdir(config.paddle_path)
+os.chdir(_config.paddle_path)
 build = "build"
 if os.path.exists(build):
     shutil.rmtree(build)
@@ -36,11 +36,11 @@ subprocess.call("WITH_TESTING=ON "
     "WITH_INFERENCE_API_TEST=OFF "
     "paddle/scripts/paddle_build.sh build",
     shell=True,
-    cwd=config.paddle_path
+    cwd=_config.paddle_path
 )
 
 
-os.chdir(config.paddle_path)
+os.chdir(_config.paddle_path)
 os.chdir(build)
 cmd = "pip install --upgrade python/dist/*.whl"
 os.system(cmd)

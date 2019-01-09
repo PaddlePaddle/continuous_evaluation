@@ -4,15 +4,15 @@ $XONSH_SHOW_TRACEBACK = True
 
 import sys; sys.path.insert(0, '')
 import subprocess
-import config
-from config import pjoin
+import _config
+from _config import pjoin
 from utils import PathRecover, log
 import os
 import argparse
 from analysis_kpis import AnalysisKpiData
 
-$ceroot=config.workspace
-os.environ['ceroot'] = config.workspace
+$ceroot=_config.workspace
+os.environ['ceroot'] = _config.workspace
 
 def parse_args():
     parser= argparse.ArgumentParser("model benchmark")
@@ -31,7 +31,7 @@ def get_changed_tasks(args):
     if args.task_dir:
         tasks = args.task_dir.split()
         return tasks
-    cd @(config.baseline_path)
+    cd @(_config.baseline_path)
     out = $(git diff master | grep "diff --git")
     out = out.strip()
     for item in out.split('\n'):
@@ -70,9 +70,9 @@ def run_task(task_name, times):
     '''
     Run the model task.
     '''
-    task_dir = pjoin(config.baseline_path, task_name)
+    task_dir = pjoin(_config.baseline_path, task_name)
     log.warn('run  model', task_name)
-    cd @(config.workspace)
+    cd @(_config.workspace)
     env = {}
 
     try:
@@ -101,7 +101,7 @@ def run_task(task_name, times):
             cd @(task_dir)
             ./run.xsh
 
-        cd @(config.workspace)
+        cd @(_config.workspace)
 
         kpis = {}
         for kpi in tracking_kpis:

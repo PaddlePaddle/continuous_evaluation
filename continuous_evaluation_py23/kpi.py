@@ -2,7 +2,7 @@ from __future__ import division
 import json
 import numpy as np
 import logging
-from config import pjoin
+from _config import pjoin
 
 
 class TestError(Exception):
@@ -161,6 +161,18 @@ class GreaterWorseKpi(Kpi):
             info = "Task is disabled, " + info
         return info
 
+    @property
+    def detail_info(self):
+        trend=""
+        if self.ratio < 0:
+            trend = "-"
+        else:
+            trend = "+"
+        if not self.actived:
+            trend = "="
+        info = "{name},{ratio},{tren}".format(name=self.name, ratio=abs(self.ratio), tren=trend)
+        return info
+
 
 class LessWorseKpi(GreaterWorseKpi):
     ''' Evaluator for any factors that less value is bad, trainning acc for example. '''
@@ -221,6 +233,18 @@ class LessWorseKpi(GreaterWorseKpi):
         info = "[{name}] pass".format(name=self.name)
         if not self.actived:
             info = "Task is disabled, " + info
+        return info
+
+    @property
+    def detail_info(self):
+        trend=""
+        if self.ratio < 0:
+            trend = "-"
+        else:
+            trend = "+"
+        if not self.actived:
+            trend = "="
+        info = "{name},{ratio},{tren}".format(name=self.name, ratio=abs(self.ratio), tren=trend)
         return info
 
 

@@ -4,7 +4,7 @@ some utils for clone repo, commit.
 '''
 import sys; sys.path.insert(0, '')
 from utils import PathRecover
-import config
+import _config
 import os
 import subprocess
 

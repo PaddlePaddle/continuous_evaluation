@@ -3,8 +3,8 @@ XONSH_SHOW_TRACEBACK = True
 XONSH_SHOW_TRACEBACK = True
 
 import sys; sys.path.insert(0, '')
-import config
-from config import pjoin
+import _config
+from _config import pjoin
 from utils import PathRecover, log
 import persistence as pst
 import os
@@ -15,8 +15,8 @@ import time
 import shutil
 import subprocess
 
-ceroot=config.workspace
-os.environ['ceroot'] = config.workspace
+ceroot=_config.workspace
+os.environ['ceroot'] = _config.workspace
 mode = os.environ.get('mode', 'evaluation')
 specific_tasks = os.environ.get('specific_tasks', None)
 specific_tasks = specific_tasks.split(',') if specific_tasks else []
@@ -49,11 +49,11 @@ def main():
 def update_baseline():
     ''' update the baseline in a git repo using current base. '''
     log.warn('updating baseline')
-    commit = repo.get_commit(config.paddle_path)
+    commit = repo.get_commit(_config.paddle_path)
     with PathRecover():
         message = "evalute [%s]" % commit
         for task_name in get_tasks():
-            task_dir = pjoin(config.baseline_path, task_name)
+            task_dir = pjoin(_config.baseline_path, task_name)
             os.chdir(task_dir)
             log.info('task_dir', task_dir)
             if os.path.isdir('latest_kpis'):
@@ -65,12 +65,12 @@ def update_baseline():
                     if not kpi.actived: continue
                     kpi.root = task_dir
                     better_ratio = kpi.compare_with(kpi.cur_data, kpi.baseline_data)
-                    if  better_ratio > config.kpi_update_threshold:
+                    if  better_ratio > _config.kpi_update_threshold:
                         log.warn('current kpi %s better than history by %f, update baseline' % (kpi.out_file, better_ratio))
                         shutil.copyfile(kpi.out_file, kpi.his_file)
 
 
-        os.chdir(config.baseline_path)
+        os.chdir(_config.baseline_path)
         os.system('pwd')
         os.system('git diff')
         cmd = "git diff"
@@ -78,7 +78,7 @@ def update_baseline():
         if status:
             log.warn('update github baseline')
             '''
-            due to the selected update controled by `config.kpi_update_threshold`, if one task passed, there might be no baselines to update.
+            due to the selected update controled by `_config.kpi_update_threshold`, if one task passed, there might be no baselines to update.
             '''
             cmd = 'git pull origin master; git commit -a -m "%s"; git push' % message
             os.system(cmd)
@@ -93,13 +93,13 @@ def refresh_baseline_workspace():
         max_retry = 10
         for cnt in range(max_retry):
             try:
-                if os.path.exists(config.baseline_path):
-                    shutil.rmtree(config.baseline_path)
-                cmd = "git clone %s %s" % (config.baseline_repo_url, config.baseline_path)
+                if os.path.exists(_config.baseline_path):
+                    shutil.rmtree(_config.baseline_path)
+                cmd = "git clone %s %s" % (_config.baseline_repo_url, _config.baseline_path)
                 log.info("cmd", cmd)
                 tp = os.system(cmd)
                 log.info("gitclone", tp)
-                log.info("git clone %s suc" % config.baseline_repo_url)
+                log.info("git clone %s suc" % _config.baseline_repo_url)
                 break
             except Exception as e:
                 if cnt == max_retry - 1:
@@ -114,9 +114,9 @@ def evaluate_tasks(args):
     Evaluate all the tasks. It will continue to run all the tasks even
     if any task is failed to get a summary.
     '''
-    os.chdir(config.workspace)
-    paddle_commit = repo.get_commit(config.paddle_path)
-    commit_time = repo.get_commit_date(config.paddle_path)
+    os.chdir(_config.workspace)
+    paddle_commit = repo.get_commit(_config.paddle_path)
+    commit_time = repo.get_commit_date(_config.paddle_path)
     log.warn('commit', paddle_commit)
     all_passed = True
     exception_task = {}
@@ -136,6 +136,7 @@ def evaluate_tasks(args):
         try:
             log.info("befor run task")
             passed, eval_infos, kpis, kpi_values, kpi_types = evaluate(task)
+            passed, eval_infos, kpis, kpi_values, kpi_types, detail_infos = evaluate(task)
             log.info("after run task", passed)
 
             if mode != "baseline_test":
@@ -151,7 +152,8 @@ def evaluate_tasks(args):
                                               kpis = kpis,
                                               kpi_values = kpi_values,
                                               kpi_types = kpi_types,
-                                              kpi_objs = kpi_objs)
+                                              kpi_objs = kpi_objs,
+                                              detail_infos = detail_infos)
                     log.info("after update record")
                 log.warn('after add evaluation %s result to mongodb' % task)
             if not passed:
@@ -174,7 +176,7 @@ def evaluate(task_name):
             human-readable evaluations result for all the kpis of this task.
         kpis: dict of (kpi_name, list_of_float)
     '''
-    task_dir = pjoin(config.baseline_path, task_name)
+    task_dir = pjoin(_config.baseline_path, task_name)
     log.warn('evaluating model', task_name)
 
     with PathRecover():
@@ -193,6 +195,7 @@ def evaluate(task_name):
 
         # evaluate all the kpis
         eval_infos = []
+        detail_infos = []
         kpis = []
         kpi_values = []
         kpi_types = []
@@ -210,15 +213,16 @@ def evaluate(task_name):
             kpi_types.append(kpi.__class__.__name__)
             # if failed, still continue to evaluate the other kpis to get full statistics.
             eval_infos.append(kpi.fail_info if not suc else kpi.success_info)
+            detail_infos.append(kpi.detail_info)
         log.info("after check kpi")
         log.info("evaluation kpi info: %s %s %s" % (passed, eval_infos, kpis))
-        return passed, eval_infos, kpis, kpi_values, kpi_types
+        return passed, eval_infos, kpis, kpi_values, kpi_types, detail_infos
 
 
 def get_tasks():
     with PathRecover():
-        os.chdir(config.workspace)
-        subdirs = os.listdir(config.baseline_path)
+        os.chdir(_config.workspace)
+        subdirs = os.listdir(_config.baseline_path)
             
         log.info("subdirs", subdirs)
         if case_type:
@@ -229,8 +233,8 @@ def get_tasks():
 
 
 def display_fail_info(exception_task):
-    paddle_commit = repo.get_commit(config.paddle_path)
-    infos = pst.db.finds(config.table_name, {'commitid': paddle_commit, 'type': 'kpi' })
+    paddle_commit = repo.get_commit(_config.paddle_path)
+    infos = pst.db.finds(_config.table_name, {'commitid': paddle_commit, 'type': 'kpi' })
     log.info('Evaluate [%s] failed!' % paddle_commit)
     log.warn('The details:')
     detail_info = ''
@@ -251,7 +255,7 @@ def display_fail_info(exception_task):
 
 
 def display_success_info():
-    paddle_commit = repo.get_commit(config.paddle_path)
+    paddle_commit = repo.get_commit(_config.paddle_path)
     log.warn('Evaluate [%s] successed!' % paddle_commit)
 
 
@@ -270,7 +274,7 @@ def try_start_mongod():
 
 def get_kpi_tasks(task_name):
     with PathRecover():
-        os.chdir(config.workspace)
+        os.chdir(_config.workspace)
         env = {}
         try:
             log.info("task_name", task_name)
@@ -290,7 +294,7 @@ def get_kpi_tasks(task_name):
 
 def get_changed_tasks():
     tasks = []
-    os.chdir(config.baseline_path)
+    os.chdir(_config.baseline_path)
     cmd = 'git diff master | grep "diff --git"'
     if os.system(cmd):
         return tasks

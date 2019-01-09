@@ -7,13 +7,13 @@ __all__ = [
 import sys
 sys.path.append('pypage')
 sys.path.append('..')
-import config
+import _config
 import json
 from db import MongoDB
 from datetime import datetime, timedelta
 from kpi import Kpi
 
-db = MongoDB(config.db_name, config.db_host, config.db_port)
+db = MongoDB(_config.db_name, _config.db_host, _config.db_port)
 
 
 class objdict(dict):
@@ -37,7 +37,7 @@ class CommitRecord:
         returns: list of CommitRecord
         '''
         # sort by 'date' in ascending order
-        commits = db.find_sections(config.table_name, 
+        commits = db.find_sections(_config.table_name, 
             {'type': 'kpi'}, {'commitid': 1, "_id": 0}, "date")
         commit_ids = []
         for commit in commits:
@@ -77,7 +77,7 @@ class CommitRecord:
     def __get_db_record(self):
         ''' get the corresponding tasks from database.
         '''
-        return db.finds(config.table_name,
+        return db.finds(_config.table_name,
                         {'type': 'kpi',
                          'commitid': self.commit})
 
@@ -106,7 +106,7 @@ class TaskRecord(objdict):
 
     def __get_db_record(self):
         ''' get the corresponding kpis from database'''
-        return db.find_one(config.table_name, {'type': 'kpi', \
+        return db.find_one(_config.table_name, {'type': 'kpi', \
                           'commitid': self.commitid, 'task': self.name})
 
 class KpiRecord:

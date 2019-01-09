@@ -15,7 +15,7 @@ Date: 2018/07/11
 import sys
 sys.path.append('pypage')
 sys.path.append('..')
-import config
+import _config
 import json
 import time
 from db import MongoDB
@@ -23,7 +23,7 @@ from datetime import datetime, timedelta
 from kpi import Kpi
 
 import sys
-db = MongoDB(config.db_name)
+db = MongoDB(_config.db_name)
 from web.api import CommitRecord
 from html import Html
 from datetime import datetime

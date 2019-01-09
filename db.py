@@ -55,9 +55,9 @@ class MongoDB(object):
 
 
 if __name__ == '__main__':
-    import config
+    import _config
     from pprint import pprint
 
-    db = MongoDB(config.db_name)
-    records = db.finds(config.table_name, {'type': 'kpi'})
+    db = MongoDB(_config.db_name)
+    records = db.finds(_config.table_name, {'type': 'kpi'})
     pprint(records)

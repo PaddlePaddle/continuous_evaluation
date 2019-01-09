@@ -1,7 +1,7 @@
 import sys
 sys.path.append('pypage')
 sys.path.append('..')
-import config
+import _config
 import json
 from db import MongoDB
 from api import *

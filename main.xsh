@@ -3,8 +3,8 @@ $RAISE_SUBPROC_ERROR = True
 $XONSH_SHOW_TRACEBACK = True
 
 import sys; sys.path.insert(0, '')
-import config
-from config import pjoin
+import _config
+from _config import pjoin
 from utils import PathRecover, log
 import persistence as pst
 import os
@@ -13,8 +13,8 @@ import argparse
 import traceback
 import time
 
-$ceroot=config.workspace
-os.environ['ceroot'] = config.workspace
+$ceroot=_config.workspace
+os.environ['ceroot'] = _config.workspace
 mode = os.environ.get('mode', 'evaluation')
 specific_tasks = os.environ.get('specific_tasks', None)
 specific_tasks = specific_tasks.split(',') if specific_tasks else []
@@ -49,11 +49,11 @@ def main():
 def update_baseline():
     ''' update the baseline in a git repo using current base. '''
     log.warn('updating baseline')
-    commit = repo.get_commit(config.paddle_path)
+    commit = repo.get_commit(_config.paddle_path)
     with PathRecover():
         message = "evalute [%s]" % commit
         for task_name in get_tasks():
-            task_dir = pjoin(config.baseline_path, task_name)
+            task_dir = pjoin(_config.baseline_path, task_name)
             cd @(task_dir)
             print('task_dir', task_dir)
             if os.path.isdir('latest_kpis'):
@@ -65,14 +65,14 @@ def update_baseline():
                     if not kpi.actived: continue
                     kpi.root = task_dir
                     better_ratio = kpi.compare_with(kpi.cur_data, kpi.baseline_data)
-                    if  better_ratio > config.kpi_update_threshold:
+                    if  better_ratio > _config.kpi_update_threshold:
                         log.warn('current kpi %s better than history by %f, update baseline' % (kpi.out_file, better_ratio))
                         cp @(kpi.out_file) @(kpi.his_file)
 
         if $(git diff):
             log.warn('update github baseline')
             '''
-            due to the selected update controled by `config.kpi_update_threshold`, if one task passed, there might be no baselines to update.
+            due to the selected update controled by `_config.kpi_update_threshold`, if one task passed, there might be no baselines to update.
             '''
             git pull origin master
             git commit -a -m @(message)
@@ -89,9 +89,9 @@ def refresh_baseline_workspace():
         for cnt in range(max_retry):
             try:
                 # production mode, clean baseline and rerun
-                rm -rf @(config.baseline_path)
-                git clone @(config.baseline_repo_url) @(config.baseline_path)
-                log.info("git clone %s suc" % config.baseline_repo_url)
+                rm -rf @(_config.baseline_path)
+                git clone @(_config.baseline_repo_url) @(_config.baseline_path)
+                log.info("git clone %s suc" % _config.baseline_repo_url)
                 break
             except Exception as e:
                 if cnt == max_retry - 1:
@@ -106,9 +106,10 @@ def evaluate_tasks(args):
     Evaluate all the tasks. It will continue to run all the tasks even
     if any task is failed to get a summary.
     '''
-    cd @(config.workspace)
-    paddle_commit = repo.get_commit(config.paddle_path)
-    commit_time = repo.get_commit_date(config.paddle_path)
+    cd @(_config.workspace)
+    print("_config.workspace", _config.workspace)
+    paddle_commit = repo.get_commit(_config.paddle_path)
+    commit_time = repo.get_commit_date(_config.paddle_path)
     log.warn('commit', paddle_commit)
     all_passed = True
     exception_task = {}
@@ -160,7 +161,7 @@ def evaluate(task_name):
             human-readable evaluations result for all the kpis of this task.
         kpis: dict of (kpi_name, list_of_float)
     '''
-    task_dir = pjoin(config.baseline_path, task_name)
+    task_dir = pjoin(_config.baseline_path, task_name)
     log.warn('evaluating model', task_name)
 
     with PathRecover():
@@ -198,8 +199,8 @@ def evaluate(task_name):
 
 def get_tasks():
     with PathRecover():
-        cd @(config.workspace)
-        subdirs = $(ls @(config.baseline_path)).split()
+        cd @(_config.workspace)
+        subdirs = $(ls @(_config.baseline_path)).split()
         if case_type:
             return filter(lambda x : x.startswith('%s_' % case_type), subdirs)
         else:
@@ -208,8 +209,8 @@ def get_tasks():
 
 
 def display_fail_info(exception_task):
-    paddle_commit = repo.get_commit(config.paddle_path)
-    infos = pst.db.finds(config.table_name, {'commitid': paddle_commit, 'type': 'kpi' })
+    paddle_commit = repo.get_commit(_config.paddle_path)
+    infos = pst.db.finds(_config.table_name, {'commitid': paddle_commit, 'type': 'kpi' })
     log.error('Evaluate [%s] failed!' % paddle_commit)
     log.warn('The details:')
     detail_info = ''
@@ -230,7 +231,7 @@ def display_fail_info(exception_task):
 
 
 def display_success_info():
-    paddle_commit = repo.get_commit(config.paddle_path)
+    paddle_commit = repo.get_commit(_config.paddle_path)
     log.warn('Evaluate [%s] successed!' % paddle_commit)
 
 
@@ -245,7 +246,7 @@ def try_start_mongod():
 
 def get_kpi_tasks(task_name):
     with PathRecover():
-        cd @(config.workspace)
+        cd @(_config.workspace)
         env = {}
         try:
             exec('from tasks.%s.continuous_evaluation import tracking_kpis'
@@ -262,7 +263,7 @@ def get_kpi_tasks(task_name):
 
 def get_changed_tasks():
     tasks = []
-    cd @(config.baseline_path)
+    cd @(_config.baseline_path)
     out = $(git diff master | grep "diff --git")
     out = out.strip()
     for item in out.split('\n'):
