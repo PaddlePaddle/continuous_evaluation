@@ -135,7 +135,6 @@ def evaluate_tasks(args):
     for task in tasks:
         try:
             log.info("befor run task")
-            passed, eval_infos, kpis, kpi_values, kpi_types = evaluate(task)
             passed, eval_infos, kpis, kpi_values, kpi_types, detail_infos = evaluate(task)
             log.info("after run task", passed)
 
