@@ -24,12 +24,19 @@ tmp_root = pjoin(workspace, "tmp")
 kpi_update_threshold = 0.3
 
 # mongodb config
-db_name = "ce"
+#db_name = "ce"
+db_name = os.environ.get('db_name', 'ce')
 # for test, use following config
 # db_host = 'ce.paddlepaddle.org'
 # db_port = 8006
 
-
 db_host = os.environ.get('db_host', '127.0.0.1')
 db_port = os.environ.get('db_port', 27017)
 table_name = os.environ.get('table_name', 'logs')
+
+develop_evaluate = os.environ.get('develop_evaluate', 'False')
+
+develop_db_name = os.environ.get('develop_db_name', 'ce_develop')
+develop_db_host = os.environ.get('develop_db_host', '127.0.0.1')
+develop_db_port = os.environ.get('develop_db_port', 27017)
+develop_table_name = os.environ.get('develop_table_name', 'develop_logs')

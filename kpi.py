@@ -1,4 +1,5 @@
 from __future__ import division
+import os
 import json
 import numpy as np
 import logging
@@ -17,6 +18,7 @@ class Kpi(object):
                  desc='',
                  out_file=None,
                  his_file=None,
+                 develop_file=None,
                  actived=False,
                  unit_repr=None):
         ''' Interface for Kpi tracker.  
@@ -28,6 +30,7 @@ class Kpi(object):
         self.desc = desc
         self.out_file = out_file
         self.his_file = "latest_kpis/" + out_file if his_file is None else his_file
+        self.develop_file = "develop_kpis/" + out_file if develop_file is None else develop_file
         self.actived = actived
         self.unit_repr = unit_repr
         self.records = []
@@ -111,6 +114,13 @@ class GreaterWorseKpi(Kpi):
         his_data = load_records_from(pjoin(root, self.his_file))[
             self.skip_head:]
 
+        self.ratio_develop = 0
+        if os.path.exists(self.develop_file):
+            develop_data = load_records_from(pjoin(root, self.develop_file))[
+                self.skip_head:]
+            if len(develop_data) > 0:
+                self.ratio_develop = self.compare_with(cur_data, develop_data)
+
         self.ratio = self.compare_with(cur_data, his_data)
         return (-self.ratio) < self.diff_thre
 
@@ -173,6 +183,18 @@ class GreaterWorseKpi(Kpi):
         info = "{name},{ratio},{tren}".format(name=self.name, ratio=abs(self.ratio), tren=trend)
         return info
 
+    @property
+    def develop_info(self):
+        trend=""
+        if self.ratio_develop < 0:
+            trend = "-"
+        else:
+            trend = "+"
+        if not self.actived:
+            trend = "="
+        info = "{name},{ratio},{tren}".format(name=self.name, ratio=abs(self.ratio_develop), tren=trend)
+        return info
+
 
 class LessWorseKpi(GreaterWorseKpi):
     ''' Evaluator for any factors that less value is bad, trainning acc for example. '''
@@ -203,6 +225,14 @@ class LessWorseKpi(GreaterWorseKpi):
             self.skip_head:]
         his_data = load_records_from(pjoin(root, self.his_file))[
             self.skip_head:]
+
+        self.ratio_develop = 0
+        if os.path.exists(self.develop_file):
+            develop_data = load_records_from(pjoin(root, self.develop_file))[
+                self.skip_head:]
+            if len(develop_data) > 0:
+                self.ratio_develop = self.compare_with(cur_data, develop_data)
+
         self.ratio = self.compare_with(cur_data, his_data)
         return (-self.ratio) < self.diff_thre
 
@@ -245,6 +275,18 @@ class LessWorseKpi(GreaterWorseKpi):
         if not self.actived:
             trend = "="
         info = "{name},{ratio},{tren}".format(name=self.name, ratio=abs(self.ratio), tren=trend)
+        return info
+
+    @property
+    def develop_info(self):
+        trend=""
+        if self.ratio_develop < 0:
+            trend = "-"
+        else:
+            trend = "+"
+        if not self.actived:
+            trend = "="
+        info = "{name},{ratio},{tren}".format(name=self.name, ratio=abs(self.ratio_develop), tren=trend)
         return info
 
 

@@ -31,9 +31,12 @@ class MongoDB(object):
         '''
         return self.table(table).find_one(cond)
 
-    def find_sections(self, table, cond, sections, key):
+    def find_sections(self, table, cond, sections, key, limit=-1):
 
-        return self.table(table).find(cond, sections).sort(key)
+        if limit == -1:
+            return self.table(table).find(cond, sections).sort(key)
+        else:
+            return self.table(table).find(cond, sections).sort(key).limit(limit)
 
     def find(self, table, cond):
         '''

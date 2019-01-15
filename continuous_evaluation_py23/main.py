@@ -12,10 +12,12 @@ import repo
 import argparse
 import traceback
 import time
+import json
 import shutil
 import subprocess
 
-ceroot=_config.workspace
+ceroot = _config.workspace
+develop_evaluate = _config.develop_evaluate
 os.environ['ceroot'] = _config.workspace
 mode = os.environ.get('mode', 'evaluation')
 specific_tasks = os.environ.get('specific_tasks', None)
@@ -24,7 +26,7 @@ case_type = os.environ.get('case_type', None)
 
 
 def parse_args():
-    parser= argparse.ArgumentParser("Tool for running CE models")
+    parser = argparse.ArgumentParser("Tool for running CE models")
     parser.add_argument(
         '--modified',
         action='store_true',
@@ -132,10 +134,15 @@ def evaluate_tasks(args):
         log.warn('run all tasks', tasks)
         
     log.info("tasks", tasks)
+    #get develop kpis of all tasks and write to develop_kpis
+
+    if develop_evaluate == 'True':
+        prepare_develop_kpis(tasks)
+
     for task in tasks:
         try:
             log.info("befor run task")
-            passed, eval_infos, kpis, kpi_values, kpi_types, detail_infos = evaluate(task)
+            passed, eval_infos, kpis, kpi_values, kpi_types, detail_infos, develop_infos = evaluate(task)
             log.info("after run task", passed)
 
             if mode != "baseline_test":
@@ -152,7 +159,8 @@ def evaluate_tasks(args):
                                               kpi_values = kpi_values,
                                               kpi_types = kpi_types,
                                               kpi_objs = kpi_objs,
-                                              detail_infos = detail_infos)
+                                              detail_infos = detail_infos,
+                                              develop_infos = develop_infos)
                     log.info("after update record")
                 log.warn('after add evaluation %s result to mongodb' % task)
             if not passed:
@@ -163,6 +171,43 @@ def evaluate_tasks(args):
 
     return all_passed, exception_task
 
+
+def prepare_develop_kpis(tasks):
+    '''
+    '''
+    # get develop kpis from db
+    develop_kpis = pst.get_kpis_from_db(tasks)
+    
+    # save kpi to file
+    for task in tasks:
+        try:
+            if task not in develop_kpis:
+                continue
+            kpis = develop_kpis[task]
+            kpis_keys = kpis['kpis-keys']
+            kpis_values = json.loads(kpis['kpis-values'])
+            assert len(kpis_keys)==len(kpis_values)
+            for i in range(len(kpis_keys)):
+                save_kpis(task, kpis_keys[i], kpis_values[i])
+        except Exception as e:
+            log.warn(e)
+          
+
+def save_kpis(task_name, kpi_name, kpi_value):
+    '''
+    '''
+    develop_dir = "develop_kpis"
+    task_dir = pjoin(_config.baseline_path, task_name)
+    with PathRecover():
+         os.chdir(task_dir)
+         if not os.path.exists(develop_dir):
+             os.makedirs(develop_dir)
+         os.chdir(develop_dir)
+         file_name = kpi_name + "_factor.txt"
+         with open(file_name, 'w') as fout:
+             for item in kpi_value:
+                 fout.write(str(item) + '\n')
+              
 
 def evaluate(task_name):
     '''
@@ -183,8 +228,8 @@ def evaluate(task_name):
             os.chdir(task_dir)
             log.info("befor ./run.xsh")
             cmd = "./run.xsh"
-            log.info("after ./run.xsh")
             os.system(cmd)
+            log.info("after ./run.xsh")
         except Exception as e:
             print(e)
 
@@ -195,6 +240,7 @@ def evaluate(task_name):
         # evaluate all the kpis
         eval_infos = []
         detail_infos = []
+        develop_infos = []
         kpis = []
         kpi_values = []
         kpi_types = []
@@ -213,9 +259,12 @@ def evaluate(task_name):
             # if failed, still continue to evaluate the other kpis to get full statistics.
             eval_infos.append(kpi.fail_info if not suc else kpi.success_info)
             detail_infos.append(kpi.detail_info)
+            develop_infos.append(kpi.develop_info)
         log.info("after check kpi")
         log.info("evaluation kpi info: %s %s %s" % (passed, eval_infos, kpis))
-        return passed, eval_infos, kpis, kpi_values, kpi_types, detail_infos
+        if develop_evaluate == 'False':
+            develop_infos = []
+        return passed, eval_infos, kpis, kpi_values, kpi_types, detail_infos, develop_infos
 
 
 def get_tasks():
