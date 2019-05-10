@@ -1,1 +1,1 @@
-# Paddle Continous Evaluate Framework
+# Paddle Continous Evaluate Framework(CE)
