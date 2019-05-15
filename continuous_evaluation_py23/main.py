@@ -278,7 +278,7 @@ def get_tasks():
             return filter(lambda x : x.startswith('%s_' % case_type), subdirs)
         else:
             return filter(lambda x : not (x.startswith('__') or x.startswith('model_')
-                   or x.endswith('.md') or x.startswith('.')), subdirs)
+                   or x.endswith('.md') or x.startswith('.') or x.startswith('models')), subdirs)
 
 
 def display_fail_info(exception_task):
