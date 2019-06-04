@@ -195,6 +195,7 @@ def prepare_develop_kpis(tasks):
 
 def save_kpis(task_name, kpi_name, kpi_value):
     '''
+    save kpis
     '''
     develop_dir = "develop_kpis"
     task_dir = pjoin(_config.baseline_path, task_name)
