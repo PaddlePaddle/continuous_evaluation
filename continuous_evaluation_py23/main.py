@@ -23,6 +23,7 @@ mode = os.environ.get('mode', 'evaluation')
 specific_tasks = os.environ.get('specific_tasks', None)
 specific_tasks = specific_tasks.split(',') if specific_tasks else []
 case_type = os.environ.get('case_type', None)
+tasks_env = os.environ.get('tasks_env', None)
 
 
 def parse_args():
@@ -152,7 +153,7 @@ def evaluate_tasks(args):
                     log.info("befor update record")
                     pst.add_evaluation_record(commitid = paddle_commit,
                                               date = commit_time,
-                                              task = task,
+                                              task = "%s_%s" % (tasks_env, task) if tasks_env else task,
                                               passed = passed,
                                               infos = eval_infos,
                                               kpis = kpis,
