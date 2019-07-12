@@ -97,7 +97,9 @@ RUN git clone https://github.com/woboq/woboq_codebrowser /woboq && \
      cmake -DLLVM_CONFIG_EXECUTABLE=/usr/bin/llvm-config-3.8 \
            -DCMAKE_BUILD_TYPE=Release . \
      make)
-
+RUN pip install sklearn;
+RUN pip install pandas;
+RUN pip install wget;
 
 # Configure OpenSSH server. c.f. https://docs.docker.com/engine/examples/running_ssh_service
 RUN mkdir /var/run/sshd
