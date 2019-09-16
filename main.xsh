@@ -24,6 +24,7 @@ specific_tasks = specific_tasks.split(',') if specific_tasks else []
 case_type = os.environ.get('case_type', None)
 tasks_env = os.environ.get('tasks_env', None)
 
+
 def parse_args():
     parser= argparse.ArgumentParser("Tool for running CE models")
     parser.add_argument(
