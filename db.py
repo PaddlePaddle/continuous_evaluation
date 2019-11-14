@@ -4,7 +4,7 @@ from pymongo import MongoClient
 
 class MongoDB(object):
     def __init__(self, dbname, host='localhost', port=27017):
-        self.client = MongoClient(host, port)
+        self.client = MongoClient(host, int(port))
         self.db = getattr(self.client, dbname)
 
     def table(self, table):
