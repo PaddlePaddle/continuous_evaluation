@@ -229,7 +229,7 @@ def evaluate(task_name):
         try:
             os.chdir(task_dir)
             log.info("befor ./run.xsh")
-            cmd = "./run.xsh" if _config.system == "linux" else "./run.bat"
+            cmd = "./run.xsh" if _config.system == "linux" else "run.bat"
             os.system(cmd)
             log.info("after ./run.xsh")
         except Exception as e:
