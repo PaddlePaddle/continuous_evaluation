@@ -40,3 +40,6 @@ develop_db_name = os.environ.get('develop_db_name', 'ce_develop')
 develop_db_host = os.environ.get('develop_db_host', '127.0.0.1')
 develop_db_port = os.environ.get('develop_db_port', 27017)
 develop_table_name = os.environ.get('develop_table_name', 'develop_logs')
+
+#system linux or windows
+system = os.environ.get('system', 'linux')
