@@ -1,7 +1,7 @@
 import os
 import sys
 from flask import Flask, request, redirect, send_from_directory, render_template_string
-from flask.ext.cache import Cache
+from flask_cache import Cache
 sys.path.append('..')
 from db import MongoDB
 from datetime import datetime, timedelta
@@ -20,7 +20,7 @@ TEMPLATE_DIR = os.path.join(SERVER_PATH, "template")
 app = Flask(
     "modelce", static_url_path=STATIC_DIR, template_folder=TEMPLATE_DIR)
 cache = Cache(
-    app, _config={'CACHE_TYPE': 'filesystem',
+    app, config={'CACHE_TYPE': 'filesystem',
                  'CACHE_DIR': './_cache'})
 db = MongoDB(_config.db_name, _config.db_host, _config.db_port)
 
@@ -29,26 +29,39 @@ db = MongoDB(_config.db_name, _config.db_host, _config.db_port)
 @cache.cached(timeout=120)
 def index():
     '''
+    build index page
+    '''
+    page, snips = build_index_page()
+    tables = CommitRecord.get_all_tables()
+    logics = merge_logics(snips[0].logic())
+    return render_template_string(page, **logics)
+
+@app.route('/main', methods=["GET"])
+#@cache.cached(timeout=120)
+def main():
+    '''
     Show the status, the contents:
 
     a list of commitids and their status(passed or not, the info)
     '''
-    page, snips = build_index_page()
-    commits = CommitRecord.get_all()
+    table_name = request.args.get('table')
+    page, snips = build_main_page(table_name)
+    commits = CommitRecord.get_all(table_name)
     latest_commit = commits[-1].commit
-    logics = merge_logics(snips[0].logic(), snips[1].logic(latest_commit))
-    print('commits', snips[0].logic())
+    logics = merge_logics(snips[0].logic(table_name), snips[1].logic(table_name, latest_commit))
+    print('commits', snips[0].logic(table_name))
     return render_template_string(page, **logics)
 
 
 @app.route('/commit/details', methods=["GET"])
 #@cache.cached(timeout=5)
 def commit_details():
+    table_name = request.args.get('table')
     commit = request.args.get('commit')
 
-    page, snips = build_commit_detail_page()
+    page, snips = build_commit_detail_page(table_name)
 
-    logics = snips[0].logic(commit)
+    logics = snips[0].logic(table_name, commit)
     return render_template_string(page, **logics)
 
 
@@ -74,10 +87,11 @@ def commit_compare():
 #@cache.cached(timeout=120)
 @app.route('/commit/draw_scalar', methods=["GET"])
 def draw_scalar():
+    table_name = request.args['table']
     task_name = request.args['task']
 
     page, (scalar_snap,) = build_scalar_page(task_name)
-    logics = merge_logics(scalar_snap.logic())
+    logics = merge_logics(scalar_snap.logic(table_name))
     return render_template_string(page, **logics)
 
 

@@ -22,21 +22,39 @@ compare_page = Page(
 dist_page = Page(
     "Distributation", filename="pypage-search.html").enable_bootstrap().enable_echarts()
 
+
 def build_index_page():
     page = Page('Continous Evaluation', debug=True).enable_bootstrap()
-
-    commit_snip = CommitStatusSnip()
-    commit_detail_snip = CommitDetailSnip()
-
     with page.body:
         # add navbar
         NavSnip().html
+        tables_snip = TablesSnip()
+        main_container = create_middle_align_box()
+        with main_container:
+            with lyt.row():
+                with lyt.col(size=4):
+                    Tag('h3', '各任务运行数据存放表')
+                    Tag('p', '若无数据，点击会报错.')
+                    tables_snip.html
+    return page.compile_str(), (tables_snip, )
+
+    
+
+
+def build_main_page(table_name):
+    page = Page('Continous Evaluation', debug=True).enable_bootstrap()
+
+    commit_snip = CommitStatusSnip(table_name)
+    commit_detail_snip = CommitDetailSnip(table_name)
+
+    with page.body:
+        # add navbar
 
         main_container = create_middle_align_box()
         with main_container:
             with lyt.row():
                 with lyt.col(size=4):
-                    Tag('h3', 'Evaluated Commits')
+                    Tag('h3', '例次运行状态')
                     Tag('p', 'green means successful, grey means fail.')
                     commit_snip.html
                 with lyt.col():
@@ -46,10 +64,10 @@ def build_index_page():
     return page.compile_str(), (commit_snip, commit_detail_snip)
 
 
-def build_commit_detail_page():
+def build_commit_detail_page(table_name):
     page = Page('Commit Evaluation Details').enable_bootstrap()
 
-    commit_detail_snip = CommitDetailSnip()
+    commit_detail_snip = CommitDetailSnip(table_name)
 
     with page.body:
         NavSnip().html
@@ -117,9 +135,8 @@ class NavSnip(Snippet):
             'CE',
             links=[
                 '/',
-                '/commit/compare',
             ],
-            link_txts=['index', 'compare'],
+            link_txts=['index'],
             theme='dark',
             color='dark')
 
@@ -129,6 +146,10 @@ class NavSnip(Snippet):
 
 class CommitDetailSnip(Snippet):
     ''' Display commit details. '''
+
+    def __init__(self, table_name):
+        super().__init__()
+        self.table_name = table_name
 
     @property
     def html(self):
@@ -144,10 +165,10 @@ class CommitDetailSnip(Snippet):
             RawHtml('<hr/>')
 
         with lyt.fluid_container():
-            Tag('h2', 'Tasks').as_row()
+            Tag('h2', '模型').as_row()
             with FOR('name,task in version.kpis.items()'):
                 Tag('h4', VAL('name')).as_row()
-                Tag('span', '<a href="/commit/draw_scalar?task=%s">show scalars</a>' % VAL('name')).as_row()
+                Tag('span', '<a href="/commit/draw_scalar?table=%s&task=%s">show scalars</a>' % (self.table_name, VAL('name')))
                 with lyt.row():
                     with table().set_striped():
                         RawHtml('<thead class="thead-dark"><tr>')
@@ -169,13 +190,35 @@ class CommitDetailSnip(Snippet):
                                     with IF('kpi[3] != "pass" and kpi[4]'):
                                         alert(c=VAL('kpi[3]')).set_danger()
 
-    def logic(self, commitid):
-        task_kpis = CommitRecord.get_tasks(commitid)
+    def logic(self, table_name, commitid):
+        task_kpis = CommitRecord.get_tasks(table_name, commitid)
         res = objdict(version=dict(
             commit=commitid,
             passed=tasks_success(task_kpis),
             kpis=task_kpis, ))
         return res
+
+
+class TablesSnip(Snippet):
+    '''
+    TablesSnip
+    '''
+    @property
+    def html(self):
+        with Tag('ul', class_='list-group'):
+            href_val = '/main?table=%s' % VAL('table')
+            with FOR('table in %s' % self.KEY('tables')):
+                with Tag(
+                        'a',
+                        class_='list-group-item list-group-item-action list-group-item-success',
+                        href=href_val):
+                    Tag('b', VAL('table'))
+
+
+    def logic(self):
+        tables = CommitRecord.get_all_tables()
+        return {self.KEY('tables'): [v for v in reversed(tables)], }
+        
 
             
 class CommitCompareSelectSnip(Snippet):
@@ -216,12 +259,16 @@ class CommitCompareSelectSnip(Snippet):
 class CommitStatusSnip(Snippet):
     ''' A list of commits. '''
 
+    def __init__(self, table_name):
+        super().__init__()
+        self.table_name = table_name
+
     @property
     def html(self):
         ''' Commit list with links to details. '''
 
         with Tag('ul', class_='list-group'):
-            href_val = '/commit/details?commit=%s' % VAL('commit.commit')
+            href_val = '/commit/details?table=%s&commit=%s' % (self.table_name, VAL('commit.commit'))
             with FOR('commit in %s' % self.KEY('commits')):
                 with IF('commit.passed') as f:
                     with Tag(
@@ -240,8 +287,8 @@ class CommitStatusSnip(Snippet):
                         Tag('b', VAL('commit.shortcommit'))
                         Tag('span', VAL('commit.date'))
 
-    def logic(self):
-        commits = CommitRecord.get_all()
+    def logic(self, table_name):
+        commits = CommitRecord.get_all(table_name)
         return {self.KEY('commits'): [v for v in reversed(commits)], }
 
 
@@ -342,6 +389,7 @@ class ScalarSnip(Snippet):
     @property
     def html(self):
         with lyt.row():
+            Tag('h2', '各指标趋势图').as_row()
             Tag('h3', self.VAL('task_name'))
             RawHtml('<hr/>')
 
@@ -350,13 +398,13 @@ class ScalarSnip(Snippet):
                     with lyt.row():
                         RawHtml("{{ dist |safe }}")
 
-    def logic(self):
+    def logic(self, table_name):
         # should be sorted by freshness
-        commits = CommitRecord.get_all()
+        commits = CommitRecord.get_all(table_name)
         kpis = {}
         last_N_commit = commits[-self.N:-1] + [commits[-1]]
         for commit in last_N_commit:
-            rcd = CommitRecord.get_tasks(commit.commit)
+            rcd = CommitRecord.get_tasks(table_name, commit.commit)
             if self.task_name not in rcd: continue
             for (kpi,val) in rcd[self.task_name].kpis.items():
                 kpis.setdefault(kpi+'--x', []).append(commit.shortcommit)

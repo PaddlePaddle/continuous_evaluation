@@ -7,6 +7,13 @@ class MongoDB(object):
         self.client = MongoClient(host, int(port))
         self.db = getattr(self.client, dbname)
 
+    def all_tables(self):
+        '''
+        find all collection
+        '''
+        collist = self.db.list_collection_names()
+        return collist
+
     def table(self, table):
         ''' table might be a string or a Mongo table object. '''
         if isinstance(table, str):

@@ -32,12 +32,12 @@ class CommitRecord:
         self.info = ""
 
     @staticmethod
-    def get_all():
+    def get_all(table_name):
         ''' Get all commit records, and sort by latest to oldest.  
         returns: list of CommitRecord
         '''
         # sort by 'date' in ascending order
-        commits = db.find_sections(_config.table_name, 
+        commits = db.find_sections(table_name, 
             {'type': 'kpi'}, {'commitid': 1, "_id": 0}, "date")
         commit_ids = []
         for commit in commits:
@@ -47,7 +47,7 @@ class CommitRecord:
         records = []
         for commit in commit_ids:
             commitobj = CommitRecord(commit)
-            tasks = commitobj.__get_db_record()
+            tasks = commitobj.__get_db_record(table_name)
             commitobj.commit = commit
             commitobj.shortcommit = commit[:7]
             commitobj.date = datetime.utcfromtimestamp(int(tasks[0]['date'])) + \
@@ -58,28 +58,35 @@ class CommitRecord:
         return records
 
     @staticmethod
-    def get_tasks(commit):
+    def get_tasks(table_name, commit):
         ''' Get the task details belong to a commit. 
         returns:  dict of TaskRecord
                      keys: task name,
                      values: TaskRecord '''
         record = CommitRecord(commit)
-        tasks = record.__get_db_record()
+        tasks = record.__get_db_record(table_name)
         print (tasks)
         res = objdict()
         for task in tasks:
             taskobj = TaskRecord(commit, task['task'], task['infos'],
                                  task['passed'])
-            taskobj.kpis = taskobj.get_kpis()
+            taskobj.kpis = taskobj.get_kpis(table_name)
             res[taskobj.name] = taskobj
         return res
 
-    def __get_db_record(self):
+    def __get_db_record(self, table_name):
         ''' get the corresponding tasks from database.
         '''
-        return db.finds(_config.table_name,
+        return db.finds(table_name,
                         {'type': 'kpi',
                          'commitid': self.commit})
+
+    @staticmethod
+    def get_all_tables():
+        '''
+        get all tables
+        '''
+        return db.all_tables()
 
 
 class TaskRecord(objdict):
@@ -92,21 +99,21 @@ class TaskRecord(objdict):
         self.passed = passed
         self.commitid = commit
 
-    def get_kpis(self):
+    def get_kpis(self, table_name):
         '''Get kpis details belong to a task.
         returns dict of KpiRecord
                     keys: kpi name,
                     values: KpiRecord'''
-        task_info = self.__get_db_record()
+        task_info = self.__get_db_record(table_name)
         kpi_infos = {}
         for kpi in task_info['kpis-keys']:
             kpiobj = KpiRecord(kpi)
             kpi_infos[kpi] = kpiobj.get_kpi_info(task_info)
         return kpi_infos
 
-    def __get_db_record(self):
+    def __get_db_record(self, table_name):
         ''' get the corresponding kpis from database'''
-        return db.find_one(_config.table_name, {'type': 'kpi', \
+        return db.find_one(table_name, {'type': 'kpi', \
                           'commitid': self.commitid, 'task': self.name})
 
 class KpiRecord:
