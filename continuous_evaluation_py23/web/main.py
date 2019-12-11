@@ -49,7 +49,7 @@ def main():
     commits = CommitRecord.get_all(table_name)
     latest_commit = commits[-1].commit
     logics = merge_logics(snips[0].logic(table_name), snips[1].logic(table_name, latest_commit))
-    print('commits', snips[0].logic(table_name))
+    #print('commits', snips[0].logic(table_name))
     return render_template_string(page, **logics)
 
 
