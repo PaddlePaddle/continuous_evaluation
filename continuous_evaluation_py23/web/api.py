@@ -65,7 +65,7 @@ class CommitRecord:
                      values: TaskRecord '''
         record = CommitRecord(commit)
         tasks = record.__get_db_record(table_name)
-        print (tasks)
+        #print (tasks)
         res = objdict()
         for task in tasks:
             taskobj = TaskRecord(commit, task['task'], task['infos'],
